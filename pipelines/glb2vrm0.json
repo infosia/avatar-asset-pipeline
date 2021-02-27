@@ -1,0 +1,23 @@
+{
+  "name":"glb2vrm0",
+  "description":"Convert glTF binary (.glb) to VRM spec 0.0",
+  "pipelines":[
+    {
+      "name":"Convert & Write",
+      "pre-conditions":[
+        "glb_open"
+      ],
+      "components":[
+        "glb_z_reverse",
+        "glb_transforms_apply",
+        "vrm0_default_extensions"
+      ],
+      "post-conditions":[
+        "glb_validate"
+      ],
+      "finalizers":[
+        "glb_write_close"
+      ]
+    }
+  ]
+}
