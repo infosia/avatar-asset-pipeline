@@ -1,15 +1,14 @@
 #pragma once
 
-#include "DSPatch.h"
-#include "pipelines.hpp"
+#include <DSPatch.h>
 #include <iostream>
 
 namespace DSPatch {
 
-class glb_z_reverse final : public Component {
+class vrm0_default_extensions final : public Component {
 
 public:
-    glb_z_reverse(AvatarBuild::circuit_state* state)
+    vrm0_default_extensions(AvatarBuild::circuit_state* state)
         : Component()
         , state(state)
     {
@@ -17,7 +16,7 @@ public:
         SetOutputCount_(1);
     }
 
-    virtual ~glb_z_reverse()
+    virtual ~vrm0_default_extensions()
     {
     }
 
@@ -28,12 +27,11 @@ protected:
         if (state->discarded) {
             return;
         }
-        AVATAR_COMPONENT_LOG("[INFO] glb_z_reverse");
+        AVATAR_COMPONENT_LOG("[INFO] vrm0_default_extensions");
 
         cgltf_data* data = static_cast<cgltf_data*>(state->data);
         (void)data;
     }
-
     AvatarBuild::circuit_state* state;
 };
 

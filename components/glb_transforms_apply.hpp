@@ -1,23 +1,23 @@
 #pragma once
 
-#include "DSPatch.h"
-#include "pipelines.hpp"
+#include <DSPatch.h>
 #include <iostream>
 
 namespace DSPatch {
 
-class glb_z_reverse final : public Component {
+class glb_transforms_apply final : public Component {
 
 public:
-    glb_z_reverse(AvatarBuild::circuit_state* state)
+    glb_transforms_apply(AvatarBuild::circuit_state* state)
         : Component()
         , state(state)
+
     {
         SetInputCount_(1);
         SetOutputCount_(1);
     }
 
-    virtual ~glb_z_reverse()
+    virtual ~glb_transforms_apply()
     {
     }
 
@@ -28,12 +28,11 @@ protected:
         if (state->discarded) {
             return;
         }
-        AVATAR_COMPONENT_LOG("[INFO] glb_z_reverse");
+        AVATAR_COMPONENT_LOG("[INFO] glb_transforms_apply");
 
         cgltf_data* data = static_cast<cgltf_data*>(state->data);
         (void)data;
     }
-
     AvatarBuild::circuit_state* state;
 };
 

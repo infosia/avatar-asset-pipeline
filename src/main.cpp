@@ -26,27 +26,30 @@
 #include <vector>
 
 #include "CLI11.hpp"
+#include "DSPatch.h"
 #include "json.hpp"
-#include <DSPatch.h>
 
-#include <glb_z_reverse.hpp>
+#define CGLTF_IMPLEMENTATION
+#define CGLTF_WRITE_IMPLEMENTATION
+#define CGLTF_VRM_v0_0
+#define CGLTF_VRM_v0_0_IMPLEMENTATION
+#include "cgltf_write.h"
+
+#include "pipelines.hpp"
+#include "gltf_pipeline.hpp"
+
+#include "gltf_func.inl"
+
+#include "noop.hpp"
+#include "glb_z_reverse.hpp"
+#include "glb_transforms_apply.hpp"
+#include "vrm0_default_extensions.hpp"
+
+using namespace AvatarBuild;
 
 using json = nlohmann::json;
 
-struct cmd_options {
-    std::string config;
-    bool verbose;
-};
-
-struct pipeline {
-    std::string name;
-    std::vector<std::string> pre;
-    std::vector<std::string> components;
-    std::vector<std::string> post;
-    std::vector<std::string> finalizers;
-};
-
-static inline std::vector<std::string> get_items(std::string name, json obj)
+static std::vector<std::string> get_items(std::string name, json obj)
 {
     const auto items_obj = obj[name];
     std::vector<std::string> items;
@@ -58,41 +61,77 @@ static inline std::vector<std::string> get_items(std::string name, json obj)
     return items;
 }
 
-static inline void wire_component(pipeline p, std::shared_ptr<DSPatch::Circuit> circuit)
+static std::shared_ptr<DSPatch::Component> create_component(std::string name, circuit_state* state)
 {
-
-
+    if (name == "glb_z_reverse") {
+        return std::make_shared<DSPatch::glb_z_reverse>(state);
+    } else if (name == "glb_transforms_apply") {
+        return std::make_shared<DSPatch::glb_transforms_apply>(state);
+    } else if (name == "vrm0_default_extensions") {
+        return std::make_shared<DSPatch::vrm0_default_extensions>(state);
+    }
+    return std::make_shared<DSPatch::noop>(state, name);
 }
 
-static inline std::shared_ptr<DSPatch::Circuit> build_circuit(cmd_options options, json config_obj)
+static std::shared_ptr<pipeline_processor> create_pipeline(std::string name, cmd_options* options)
 {
-    auto circuit = std::make_shared<DSPatch::Circuit>();
+    if (name == "gltf_pipeline") {
+        return std::make_shared<AvatarBuild::gltf_pipeline>(name, options);
+    }
+    return std::make_shared<AvatarBuild::pipeline_processor>(name, options);
+}
 
+static std::shared_ptr<DSPatch::Component> wire_pipeline(pipeline* p, cmd_options* options)
+{
+    const auto pipeline = create_pipeline(p->name, options);
+    const auto state = pipeline->get_state();
+
+    for (size_t i = 0; i < p->components.size(); ++i) {
+        pipeline->add_component(create_component(p->components[i], state));
+    }
+
+    return pipeline;
+}
+
+static bool build_and_start_circuits(cmd_options* options, json config_obj)
+{
     const auto pipelines_obj = config_obj["pipelines"];
     if (!pipelines_obj.is_array()) {
         std::cout << "[ERROR] pipeline '" << config_obj["name"] << "' is not an array" << std::endl;
-        return circuit;
+        return false;
     }
 
-    for (const auto& obj : pipelines_obj) {
+    auto circuit = std::make_shared<DSPatch::Circuit>();
+    auto pipeline_count = pipelines_obj.size();
+
+    std::shared_ptr<DSPatch::Component> previous;
+    for (size_t i = 0; i < pipeline_count; ++i) {
+        const auto& obj = pipelines_obj[i];
+
         pipeline p;
         p.name = obj["name"];
-        p.pre  = get_items("pre-conditions", obj);
-        p.post = get_items("post-conditions", obj);
         p.components = get_items("components", obj);
-        p.finalizers = get_items("finalizers", obj);
 
-        wire_component(p, circuit);
+        auto component = wire_pipeline(&p, options);
+        circuit->AddComponent(component);
+
+        if (i > 0) {
+            circuit->ConnectOutToIn(previous, 0, component, 0);
+        }
+
+        previous = component;
     }
 
-    return circuit;
+    circuit->Tick(DSPatch::Component::TickMode::Series);
+
+    return true;
 }
 
-static inline bool start_pipelines(cmd_options options)
+static bool start_pipelines(cmd_options* options)
 {
-    std::ifstream f(options.config, std::ios::in);
+    std::ifstream f(options->config, std::ios::in);
     if (f.fail()) {
-        std::cout << "[ERROR] failed to parse config file " << options.config << std::endl;
+        std::cout << "[ERROR] failed to parse config file " << options->config << std::endl;
         return false;
     }
 
@@ -101,22 +140,18 @@ static inline bool start_pipelines(cmd_options options)
     try {
         f >> config;
 
-        if (options.verbose) {
+        if (options->verbose) {
             std::cout << "[INFO] Starting pipeline '" << config["name"] << "'" << std::endl;
-            std::cout << "=== " << config["description"] << " ===" << std::endl;
+            std::cout << "[INFO] " << config["description"] << std::endl;
         }
 
     } catch (json::parse_error& e) {
-        std::cout << "[ERROR] failed to parse config file " << options.config << std::endl;
+        std::cout << "[ERROR] failed to parse config file " << options->config << std::endl;
         std::cout << "\t" << e.what() << std::endl;
         return false;
     }
 
-    const auto circuit = build_circuit(options, config);
-
-    circuit->StartAutoTick(DSPatch::Component::TickMode::Series);
-
-    return true;
+    return build_and_start_circuits(options, config);
 }
 
 int main(int argc, char** argv)
@@ -129,11 +164,14 @@ int main(int argc, char** argv)
     bool verbose = false;
     app.add_flag("-v,--verbose", verbose, "Verbose log output");
 
+    std::string input = "models/input.glb";
+    app.add_option("-i,--input", input, "Input glTF binary file name (.glb)");
+
     CLI11_PARSE(app, argc, argv);
 
-    cmd_options options = { config, verbose };
+    cmd_options options = { config, input, verbose };
 
-    if (!start_pipelines(options)) {
+    if (!start_pipelines(&options)) {
         return 1;
     }
 
