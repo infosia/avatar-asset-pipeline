@@ -13,6 +13,7 @@ namespace AvatarBuild {
 struct cmd_options {
     std::string config;
     std::string input;
+    std::string output;
     bool verbose;
 };
 

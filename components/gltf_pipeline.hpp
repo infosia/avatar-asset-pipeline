@@ -57,7 +57,10 @@ protected:
             result = cgltf_validate(data);
 
             if (result == cgltf_result_success) {
-                //cgltf_write_file(&options, out_json.c_str(), data);
+                state.discarded = !gltf_write_file(data, state.options->output);
+                if (state.discarded) {
+                    AVATAR_PIPELINE_LOG("[ERROR] faild to write output " << state.options->output);                
+                }
             } else {
                 state.discarded = true;
                 AVATAR_PIPELINE_LOG("[WARN] Invalid glTF data: " << result);

@@ -8,6 +8,7 @@ file(GLOB pipeline_FILES components/*.hpp)
 
 set(SRC_FILES
   src/main.cpp
+  components/gltf_func.inl
   ${pipeline_FILES}
 )
 

@@ -114,14 +114,67 @@ static inline void gltf_reverse_z(cgltf_data* data)
     }
 }
 
-static inline void gltf_write_bin(cgltf_data* data, std::string output)
+static inline uint32_t gltf_get_buffer_size(cgltf_data* data)
 {
-    std::ofstream fout;
-    fout.open(output.c_str(), std::ios::out | std::ios::binary);
+    uint32_t size = 0;
+    for (cgltf_size i = 0; i < data->buffers_count; ++i) {
+        cgltf_buffer* buffer = &data->buffers[i];
+        cgltf_size aligned_size = (buffer->size + 3) & ~3;
+
+        size += (uint32_t)aligned_size + 8;
+    }
+    return size;
+}
+
+static inline std::string gltf_get_json(cgltf_data* data)
+{
+    cgltf_options options = {};
+    auto size = cgltf_write(&options, NULL, 0, data);
+    auto buffer = (char*)calloc(size, sizeof(char*));
+    cgltf_write(&options, buffer, size, data);
+
+    // compress JSON
+    auto j = nlohmann::json::parse(buffer, nullptr, false, true);
+
+    free(buffer);
+
+    if (j.is_object()) {
+        auto dump = j.dump();
+        cgltf_size dump_size = dump.size();
+        cgltf_size aligned_size = (dump_size + 3) & ~3;
+        cgltf_size align = aligned_size - dump_size;
+        for (cgltf_size i = 0; i < align; ++i) {
+            dump.append(" ");
+        }
+        return dump;
+    }
+
+    return "";
+}
+
+static inline bool gltf_write_file(cgltf_data* data, std::string output)
+{
+    std::ofstream fout(output, std::ios::trunc | std::ios::binary);
+    if (fout.fail()) {
+        return false;
+    }
+
+    const auto in_json = gltf_get_json(data);
+    const auto in_json_cstr = in_json.c_str();
+    const auto in_json_size = (uint32_t)strlen(in_json_cstr);
+    uint32_t total_size = GlbHeaderSize + GlbChunkHeaderSize + in_json_size + gltf_get_buffer_size(data);
+
+    fout.write(reinterpret_cast<const char*>(&GlbMagic), 4);
+    fout.write(reinterpret_cast<const char*>(&GlbVersion), 4);
+    fout.write(reinterpret_cast<const char*>(&total_size), 4);
+
+    fout.write(reinterpret_cast<const char*>(&in_json_size), 4);
+    fout.write(reinterpret_cast<const char*>(&GlbMagicJsonChunk), 4);
+
+    fout.write(in_json_cstr, in_json_size);
 
     for (cgltf_size i = 0; i < data->buffers_count; ++i) {
         cgltf_buffer* buffer = &data->buffers[i];
-
         cgltf_size aligned_size = (buffer->size + 3) & ~3;
         cgltf_size align = aligned_size - buffer->size;
 
@@ -130,46 +183,13 @@ static inline void gltf_write_bin(cgltf_data* data, std::string output)
         fout.write(reinterpret_cast<const char*>(buffer->data), buffer->size);
 
         for (uint32_t j = 0; j < align; ++j) {
-            fout.write(" ", 1);
+            fout.write(0, 1);
         }
     }
 
     fout.close();
-}
 
-static inline void gltf_write(std::string output, std::string in_json, std::string in_bin)
-{
-    std::ifstream in_json_st(in_json, std::ios::in | std::ios::binary);
-    std::ifstream in_bin_st(in_bin, std::ios::in | std::ios::binary);
-    std::ofstream out_st(output, std::ios::trunc | std::ios::binary);
-
-    in_json_st.seekg(0, std::ios::end);
-    uint32_t json_size = (uint32_t)in_json_st.tellg();
-    in_json_st.seekg(0, std::ios::beg);
-
-    uint32_t aligned_json_size = (json_size + 3) & ~3;
-    uint32_t json_align = aligned_json_size - json_size;
-
-    in_bin_st.seekg(0, std::ios::end);
-    uint32_t bin_size = (uint32_t)in_bin_st.tellg();
-    in_bin_st.seekg(0, std::ios::beg);
-
-    uint32_t total_size = GlbHeaderSize + GlbChunkHeaderSize + aligned_json_size + bin_size;
-
-    out_st.write(reinterpret_cast<const char*>(&GlbMagic), 4);
-    out_st.write(reinterpret_cast<const char*>(&GlbVersion), 4);
-    out_st.write(reinterpret_cast<const char*>(&total_size), 4);
-
-    out_st.write(reinterpret_cast<const char*>(&aligned_json_size), 4);
-    out_st.write(reinterpret_cast<const char*>(&GlbMagicJsonChunk), 4);
-
-    out_st << in_json_st.rdbuf();
-    for (uint32_t i = 0; i < json_align; ++i) {
-        out_st << ' ';
-    }
-    out_st << in_bin_st.rdbuf();
-
-    out_st.close();
+    return true;
 }
 
 static inline glm::mat4 gltf_get_node_transform(const cgltf_node* node)

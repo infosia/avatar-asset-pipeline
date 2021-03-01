@@ -35,10 +35,11 @@
 #define CGLTF_VRM_v0_0_IMPLEMENTATION
 #include "cgltf_write.h"
 
+#include "gltf_func.inl"
+
 #include "pipelines.hpp"
 #include "gltf_pipeline.hpp"
 
-#include "gltf_func.inl"
 
 #include "noop.hpp"
 #include "glb_z_reverse.hpp"
@@ -164,12 +165,15 @@ int main(int argc, char** argv)
     bool verbose = false;
     app.add_flag("-v,--verbose", verbose, "Verbose log output");
 
-    std::string input = "models/input.glb";
-    app.add_option("-i,--input", input, "Input glTF binary file name (.glb)");
+    std::string input = "input.glb";
+    app.add_option("-i,--input", input, "Input file name");
+
+    std::string output = "output.glb";
+    app.add_option("-o,--output", output, "Output file name");
 
     CLI11_PARSE(app, argc, argv);
 
-    cmd_options options = { config, input, verbose };
+    cmd_options options = { config, input, output, verbose };
 
     if (!start_pipelines(&options)) {
         return 1;
