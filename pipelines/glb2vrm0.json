@@ -5,8 +5,8 @@
     {
       "name":"gltf_pipeline",
       "components":[
-        "glb_z_reverse",
         "glb_transforms_apply",
+        "glb_z_reverse",
         "vrm0_default_extensions"
       ]
     }

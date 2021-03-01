@@ -53,7 +53,7 @@ protected:
 
         circuit->Tick(DSPatch::Component::TickMode::Series);
        
-        if (state.discarded) {
+        if (!state.discarded) {
             result = cgltf_validate(data);
 
             if (result == cgltf_result_success) {

@@ -31,7 +31,8 @@ protected:
         AVATAR_COMPONENT_LOG("[INFO] glb_z_reverse");
 
         cgltf_data* data = static_cast<cgltf_data*>(state->data);
-        (void)data;
+        gltf_reverse_z(data);
+        gltf_update_inverse_bind_matrices(data);
     }
 
     AvatarBuild::circuit_state* state;

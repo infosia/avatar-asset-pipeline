@@ -31,7 +31,9 @@ protected:
         AVATAR_COMPONENT_LOG("[INFO] glb_transforms_apply");
 
         cgltf_data* data = static_cast<cgltf_data*>(state->data);
-        (void)data;
+
+        gltf_apply_transforms(data);
+        gltf_update_inverse_bind_matrices(data);
     }
     AvatarBuild::circuit_state* state;
 };
