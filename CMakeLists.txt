@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.12)
 
 project(avatar-asset-pipeline)
 
@@ -39,15 +39,19 @@ set (dspatch_INCLUDES
 
 target_include_directories(dspatch PRIVATE ${dspatch_INCLUDES})
 
+set(REPROC++ ON)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/extern/reproc)
+
 set( EXE_NAME avatar-build )
 add_executable( ${EXE_NAME} ${SRC_FILES} )
 set_property( TARGET ${EXE_NAME} PROPERTY CXX_STANDARD 11 )
 
 target_include_directories(${EXE_NAME} PRIVATE ${BUILD_INCLUDES})
-target_link_libraries(${EXE_NAME} PRIVATE dspatch)
+target_link_libraries(${EXE_NAME} PRIVATE dspatch reproc++)
 
 if(MSVC)
     target_compile_options(dspatch PRIVATE /W4 /WX /wd4267)
+    target_compile_options(reproc PRIVATE /W4 /WX /wd4996)
     target_compile_options(${EXE_NAME} PRIVATE /W4 /WX)
     add_definitions( -D_CRT_SECURE_NO_WARNINGS)
 else()

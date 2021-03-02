@@ -1,3 +1,6 @@
 [submodule "extern/cgltf"]
 	path = extern/cgltf
 	url = https://github.com/infosia/cgltf.git
+[submodule "extern/reproc"]
+	path = extern/reproc
+	url = https://github.com/infosia/reproc.git
