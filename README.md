@@ -11,6 +11,15 @@ Avatar asset pipeline is a tool to create continuous integration build pipelines
 
 > According to the story, a united human race in the generations following the Great Flood, speaking a single language and migrating eastward, comes to the land of Shinar. There they agree to build a city and a tower tall enough to reach heaven. God, observing their city and tower, confounds their speech so that they can no longer understand each other, and scatters them around the world. 
 
+Avatar asset pipeline is aiming to help common workflows for both 3D artist and avatar asset user. What avatar pipeline is trying to do is:
+
+* Create multiple LOD (Level of Details) assets in order to support multiple platforms while preserving original asset clean
+* Create T-pose asset from A-pose asset so 3D artist don't have to do it manually every time asset is updated
+* Create glTF asset using 3rd party vendor extensions without using Unity nor other 3D DCC tools at all
+* Integrate build pipeline onto your CI build environment as everything can be done on command line interface and in easy-to-read-and-update JSON configurations.
+
+![figure004](docs/figure004.png)
+
 ## Common transformations in practice
 
 
@@ -81,6 +90,28 @@ Avatar asset pipeline is a tool to create continuous integration build pipelines
 ```
 
 ![figure003](docs/figure003.png)
+
+## Bone naming conventions
+
+This tool follows Blender-like naming conversions in order to search for humanoid bone retargeting.
+
+> First you should give your bones meaningful base-names, like “leg”, “arm”, “finger”, “back”, “foot”, etc.
+> If you have a bone that has a copy on the other side (a pair), like an arm, give it one of the following separators:
+>
+> * Left/right separators can be either the second position “L_calfbone” or last-but-one “calfbone.R”.
+> * If there is a lower or upper case “L”, “R”, “left” or “right”, Blender handles the counterpart correctly. See below for a list of valid separators. Pick one and stick to it as close as possible when rigging; it will pay off.
+>
+> Examples of valid separators:
+>
+> * (nothing): handLeft –> handRight
+> * “_” (underscore): hand_L –> hand_R
+> * “.” (dot): hand.l –> hand.r
+> * “-” (dash): hand-l –> hand-r
+>* ” ” (space): hand LEFT –> hand RIGHT
+
+<sub>https://docs.blender.org/manual/en/latest/animation/armatures/bones/editing/naming.html</sub>
+
+Still, you can explicitly specify bone naming conversions by using `-b` option such as `-b models/input.mixamo.bones.json`. Checkout `models/*.bones.json` for commonly used bone naming conversions.
 
 ## Usage
 
