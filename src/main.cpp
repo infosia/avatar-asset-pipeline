@@ -166,12 +166,18 @@ int main(int argc, char** argv)
     app.add_flag("-v,--verbose", verbose, "Verbose log output");
 
     std::string input = "input.glb";
-    app.add_option("-i,--input", input, "Input file name");
+    app.add_option("-i,--input", input, "Input file name")->check(CLI::ExistingFile);
 
     std::string output = "output.glb";
     app.add_option("-o,--output", output, "Output file name");
 
     CLI11_PARSE(app, argc, argv);
+
+    // common mistake
+    if (input == output) {
+        std::cout << "[ERROR] Input and Output file should not be same: " << input << std::endl;
+        return 1;
+    }
 
     cmd_options options = { config, input, output, verbose };
 

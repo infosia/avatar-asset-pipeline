@@ -66,6 +66,48 @@ static inline void gltf_reverse_z_accessor(cgltf_accessor* accessor)
     }
 }
 
+static void gltf_apply_transform_accessor(cgltf_node* node, cgltf_accessor* accessor)
+{
+    uint8_t* buffer_data = (uint8_t*)accessor->buffer_view->buffer->data + accessor->buffer_view->offset + accessor->offset;
+
+    accessor->max[0] = -FLT_MAX;
+    accessor->max[1] = -FLT_MAX;
+    accessor->max[2] = -FLT_MAX;
+    accessor->min[0] = FLT_MAX;
+    accessor->min[1] = FLT_MAX;
+    accessor->min[2] = FLT_MAX;
+
+    for (cgltf_size i = 0; i < accessor->count; ++i) {
+        cgltf_float* element = (cgltf_float*)(buffer_data + (accessor->stride * i));
+
+        if (node->has_scale) {
+            element[0] *= node->scale[0];
+            element[1] *= node->scale[1];
+            element[2] *= node->scale[2];
+        }
+
+        if (node->has_translation) {
+            element[0] += node->translation[0];
+            element[1] += node->translation[1];
+            element[2] += node->translation[2];
+        }
+
+        if (node->has_rotation) {
+            const glm::vec3 pos = glm::make_vec3(element);
+            const glm::quat rot = glm::make_quat(node->rotation);
+
+            glm::vec3 newpos = rot * pos;
+
+            element[0] = newpos.x;
+            element[1] = newpos.y;
+            element[2] = newpos.z;
+        }
+
+        gltf_f3_max(element, accessor->max, accessor->max);
+        gltf_f3_min(element, accessor->min, accessor->min);
+    }
+}
+
 static inline void gltf_reverse_z(cgltf_data* data)
 {
     std::set<cgltf_accessor*> accessor_coord_done;
@@ -214,6 +256,54 @@ static inline glm::mat4 gltf_get_global_node_transform(const cgltf_node* node)
     return m;
 }
 
+static inline void gltf_apply_transform_meshes(cgltf_data* data)
+{
+    std::set<cgltf_accessor*> accessor_coord_done;
+    for (cgltf_size i = 0; i < data->nodes_count; ++i) {
+        const auto node = &data->nodes[i];
+        const auto mesh = node->mesh;
+
+        if (mesh == nullptr)
+            continue;
+
+        for (cgltf_size j = 0; j < mesh->primitives_count; ++j) {
+            const auto primitive = &mesh->primitives[j];
+
+            for (cgltf_size k = 0; k < primitive->attributes_count; ++k) {
+                const auto attr = &primitive->attributes[k];
+                const auto accessor = attr->data;
+
+                if (accessor_coord_done.count(accessor) > 0) {
+                    continue;
+                }
+                if (attr->type == cgltf_attribute_type_position) {
+                    gltf_apply_transform_accessor(node, accessor);
+                } else if (attr->type == cgltf_attribute_type_normal) {
+                    gltf_apply_transform_accessor(node, accessor);
+                }
+                accessor_coord_done.emplace(accessor);
+            }
+
+            for (cgltf_size k = 0; k < primitive->targets_count; ++k) {
+                const auto target = &primitive->targets[k];
+                for (cgltf_size a = 0; a < target->attributes_count; ++a) {
+                    const auto attr = &target->attributes[a];
+                    const auto accessor = attr->data;
+                    if (accessor_coord_done.count(accessor) > 0) {
+                        continue;
+                    }
+                    if (attr->type == cgltf_attribute_type_position) {
+                        gltf_apply_transform_accessor(node, accessor);
+                    } else if (attr->type == cgltf_attribute_type_normal) {
+                        gltf_apply_transform_accessor(node, accessor);
+                    }
+                    accessor_coord_done.emplace(accessor);
+                }
+            }
+        }
+    }
+}
+
 static void gltf_apply_transform(cgltf_node* node, const glm::mat4 parent_matrix)
 {
     const glm::mat4 identity = glm::mat4(1.0f);
@@ -330,6 +420,8 @@ static inline bool gltf_apply_weights(cgltf_node* skin_node, cgltf_accessor* pos
 
 static inline void gltf_apply_transforms(cgltf_data* data)
 {
+    gltf_apply_transform_meshes(data);
+
     for (cgltf_size i = 0; i < data->scenes_count; ++i) {
         glm::mat4 identity = glm::mat4(1.f);
         const auto scene = &data->scenes[i];
