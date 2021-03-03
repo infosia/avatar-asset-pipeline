@@ -68,7 +68,7 @@ Avatar asset pipeline is aiming to help common workflows for both 3D artist and 
 
 ## Combining multiple pipelines
 
-```json
+```js
 {
   "name":"fbx2vrm0",
   "description":"Convert FBX to VRM",
@@ -117,7 +117,7 @@ avatar asset pipeline follows Blender-like naming conversions in order to search
 
 Still, you can explicitly specify bone naming conversions by using `-b` option such as `-b models/input.mixamo.bones.json`. Checkout `models/*.bones.json` for commonly used bone naming conversions.
 
-```json
+```js
 {
   "config":{
     "pattern_match": true, // pattern match ("Hips" matches "mixamorig:Hips" too)
