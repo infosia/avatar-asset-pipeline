@@ -93,7 +93,7 @@ Avatar asset pipeline is aiming to help common workflows for both 3D artist and 
 
 ## Convert FBX to glTF
 
-Convert FBX to glTF using `fbx_pipeline` requires [FBX2glTF executable](https://github.com/facebookincubator/FBX2glTF/releases). In order to use FBX2glTF with asset pipeline you need to specify a path to the executable using `--fbx2gltf` option such as `--fbx2gltf bin/fbx2gltf.exe`.
+Conversion of FBX to glTF using `fbx_pipeline` requires [FBX2glTF executable](https://github.com/facebookincubator/FBX2glTF/releases). In order to use FBX2glTF with asset pipeline you need to specify a path to the executable using `--fbx2gltf` option such as `--fbx2gltf bin/fbx2gltf.exe`.
 
 ## Bone naming conventions
 
@@ -115,7 +115,7 @@ avatar asset pipeline follows Blender-like naming conversions in order to search
 
 <sub>https://docs.blender.org/manual/en/latest/animation/armatures/bones/editing/naming.html</sub>
 
-Still, you can explicitly specify bone naming conversions by using `-b` option such as `-b models/input.mixamo.bones.json`. Checkout `models/*.bones.json` for commonly used bone naming conversions.
+Still, you can explicitly specify bone naming conversions by using `--bone` option such as `--bone models/input.mixamo.bones.json`. Checkout `models/*.bones.json` for commonly used bone naming conversions.
 
 ```js
 {

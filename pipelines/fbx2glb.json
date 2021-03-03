@@ -1,0 +1,12 @@
+{
+  "name":"fbx2glb",
+  "description":"Convert FBX to glTF binary (.glb)",
+  "pipelines":[
+    {
+      "name":"fbx_pipeline",
+      "components":[
+        "fbx2gltf_execute"
+      ]
+    }
+  ]
+}

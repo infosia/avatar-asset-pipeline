@@ -43,6 +43,9 @@
 #include "noop.hpp"
 #include "vrm0_default_extensions.hpp"
 
+#include "fbx_pipeline.hpp"
+#include "fbx2gltf_execute.hpp"
+
 using namespace AvatarBuild;
 
 using json = nlohmann::json;
@@ -67,6 +70,8 @@ static std::shared_ptr<DSPatch::Component> create_component(std::string name, ci
         return std::make_shared<DSPatch::glb_transforms_apply>(state);
     } else if (name == "vrm0_default_extensions") {
         return std::make_shared<DSPatch::vrm0_default_extensions>(state);
+    } else if (name == "fbx2gltf_execute") {
+        return std::make_shared<DSPatch::fbx2gltf_execute>(state);
     }
     return std::make_shared<DSPatch::noop>(state, name);
 }
@@ -75,6 +80,8 @@ static std::shared_ptr<pipeline_processor> create_pipeline(std::string name, cmd
 {
     if (name == "gltf_pipeline") {
         return std::make_shared<AvatarBuild::gltf_pipeline>(name, options);
+    } else if (name == "fbx_pipeline") {
+        return std::make_shared<AvatarBuild::fbx_pipeline>(name, options);
     }
     return std::make_shared<AvatarBuild::pipeline_processor>(name, options);
 }
@@ -168,8 +175,11 @@ int main(int argc, char** argv)
     std::string output = "output.glb";
     app.add_option("-o,--output", output, "Output file name");
 
-    std::string fbx2gltf_exe = "extern/fbx2gltf.exe";
-    app.add_option("-c,--fbx2gltf", fbx2gltf_exe, "Path to fbx2gltf executable")->check(CLI::ExistingFile);
+    std::string bone_config;
+    app.add_option("-b,--bone", bone_config, "Bone configuration file name (JSON)");
+
+    std::string fbx2gltf = "extern/fbx2gltf.exe";
+    app.add_option("-x,--fbx2gltf", fbx2gltf, "Path to fbx2gltf executable")->check(CLI::ExistingFile);
 
     CLI11_PARSE(app, argc, argv);
 
@@ -179,7 +189,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    cmd_options options = { config, input, output, verbose };
+    cmd_options options = { config, input, output, fbx2gltf, verbose };
 
     if (!start_pipelines(&options)) {
         return 1;

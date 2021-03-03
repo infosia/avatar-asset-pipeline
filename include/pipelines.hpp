@@ -14,6 +14,7 @@ struct cmd_options {
     std::string config;
     std::string input;
     std::string output;
+    std::string fbx2gltf;
     bool verbose;
 };
 
