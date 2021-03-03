@@ -1,6 +1,6 @@
 {
   "config":{
-    "regex_match": true,
+    "pattern_match": true,
     "with_any_case": true
   },
   "bones":{

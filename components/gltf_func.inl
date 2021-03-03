@@ -48,14 +48,19 @@ static int run_fbx2gltf(std::string input, std::string output, std::string fbx2g
 
     reproc::arguments reproc_args(arguments);
     reproc::options reproc_options = {};
+    reproc_options.redirect.parent = true;
 
     int status = -1;
     std::error_code ec;
 
     std::tie(status, ec) = reproc::run(reproc_args, reproc_options);
 
+    if (status != 0) {
+        std::cout << "[ERROR] Failed to execute " << fbx2gltf_exe << std::endl;    
+        std::cout << "Please specify path to fbx2gltf executable with --fbx2gltf option" << std::endl;    
+    }
+
     if (ec) {
-        std::cout << "[ERROR] Failed to execute fbx2gltf" << std::endl;
         std::cout << "[ERROR] " << ec.message() << std::endl;
     }
 

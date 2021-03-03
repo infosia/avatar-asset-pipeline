@@ -16,7 +16,7 @@ Avatar asset pipeline is aiming to help common workflows for both 3D artist and 
 * Create multiple LOD (Level of Details) assets in order to support multiple platforms such as standalone VR headset device like Oculus Quest, while preserving your original asset clean
 * Create T-pose asset from A-pose asset so 3D artist don't have to do it manually every time asset is updated
 * Create glTF asset using 3rd party vendor extensions such as VRM without using Unity nor other 3D DCC tools at all
-* Integrate build pipeline onto your CI build environment as everything can be done on command line interface and in easy-to-read-and-update JSON configurations.
+* Integrate build pipeline onto your CI build environment as everything can be done on command line interface with easy-to-read-and-update JSON configurations.
 
 ![figure004](docs/figure004.png)
 
@@ -91,9 +91,13 @@ Avatar asset pipeline is aiming to help common workflows for both 3D artist and 
 
 ![figure003](docs/figure003.png)
 
+## Convert FBX to glTF
+
+Convert FBX to glTF using `fbx_pipeline` requires [FBX2glTF executable](https://github.com/facebookincubator/FBX2glTF/releases). In order to use FBX2glTF with asset pipeline you need to specify a path to the executable using `--fbx2gltf` option such as `--fbx2gltf bin/fbx2gltf.exe`.
+
 ## Bone naming conventions
 
-This tool follows Blender-like naming conversions in order to search for humanoid bone retargeting.
+avatar asset pipeline follows Blender-like naming conversions in order to search for humanoid bone retargeting.
 
 > First you should give your bones meaningful base-names, like “leg”, “arm”, “finger”, “back”, “foot”, etc.
 > If you have a bone that has a copy on the other side (a pair), like an arm, give it one of the following separators:
@@ -112,6 +116,31 @@ This tool follows Blender-like naming conversions in order to search for humanoi
 <sub>https://docs.blender.org/manual/en/latest/animation/armatures/bones/editing/naming.html</sub>
 
 Still, you can explicitly specify bone naming conversions by using `-b` option such as `-b models/input.mixamo.bones.json`. Checkout `models/*.bones.json` for commonly used bone naming conversions.
+
+```json
+{
+  "config":{
+    "pattern_match": true, // pattern match ("Hips" matches "mixamorig:Hips" too)
+    "with_any_case": true, // case insensitive
+  },
+  "bones":{
+    "hips":"Hips",
+    "leftUpperLeg":"LeftUpLeg",
+    "rightUpperLeg":"RightUpLeg",
+    "leftLowerLeg":"LeftLeg",
+    "rightLowerLeg":"RightLeg",
+    "leftFoot":"LeftFoot",
+    "rightFoot":"RightFoot",
+    "spine":"Spine",
+    "chest":"Spine1",
+    "neck":"Neck",
+    "head":"Head",
+    "leftShoulder":"LeftShoulder",
+    "rightShoulder":"RightShoulder",
+    ...
+  }
+}
+```
 
 ## Usage
 

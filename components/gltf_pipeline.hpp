@@ -1,6 +1,7 @@
 #pragma once
 
 #include "DSPatch.h"
+#include "pipelines.hpp"
 #include <string>
 #include <iostream>
 #include <vector>

@@ -37,13 +37,10 @@
 
 #include "gltf_func.inl"
 
-#include "pipelines.hpp"
-#include "gltf_pipeline.hpp"
-
-
-#include "noop.hpp"
-#include "glb_z_reverse.hpp"
 #include "glb_transforms_apply.hpp"
+#include "glb_z_reverse.hpp"
+#include "gltf_pipeline.hpp"
+#include "noop.hpp"
 #include "vrm0_default_extensions.hpp"
 
 using namespace AvatarBuild;
@@ -170,6 +167,9 @@ int main(int argc, char** argv)
 
     std::string output = "output.glb";
     app.add_option("-o,--output", output, "Output file name");
+
+    std::string fbx2gltf_exe = "extern/fbx2gltf.exe";
+    app.add_option("-c,--fbx2gltf", fbx2gltf_exe, "Path to fbx2gltf executable")->check(CLI::ExistingFile);
 
     CLI11_PARSE(app, argc, argv);
 
