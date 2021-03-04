@@ -8,7 +8,7 @@
 
 static inline int run_fbx2gltf(AvatarBuild::cmd_options* options)
 {
-    std::string output = options->output + ".fbx2gltf.glb";
+    std::string output = options->output + ".fbx.glb";
 
     std::vector<std::string> arguments;
 

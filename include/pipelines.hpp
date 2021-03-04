@@ -5,6 +5,8 @@
 #include <iostream>
 #include <vector>
 
+#include "json.hpp"
+
 #define AVATAR_PIPELINE_LOG(msg)  if (state.options->verbose) std::cout << msg << std::endl;
 #define AVATAR_COMPONENT_LOG(msg) if (state->options->verbose) std::cout << msg << std::endl;
 
@@ -14,6 +16,7 @@ struct cmd_options {
     std::string config;
     std::string input;
     std::string output;
+    std::string bone_config;
     std::string fbx2gltf;
     bool verbose;
 };

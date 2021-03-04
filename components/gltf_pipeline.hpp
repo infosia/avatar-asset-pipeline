@@ -1,10 +1,12 @@
 #pragma once
 
 #include "DSPatch.h"
-#include "pipelines.hpp"
 #include <string>
 #include <iostream>
 #include <vector>
+
+#include "pipelines.hpp"
+#include "gltf_bone_mappings.inl"
 
 namespace AvatarBuild {
 
@@ -51,6 +53,8 @@ protected:
         }
 
         state.data = data;
+
+        gltf_setup_bone_mappings(data, state.options);
 
         circuit->Tick(DSPatch::Component::TickMode::Series);
        

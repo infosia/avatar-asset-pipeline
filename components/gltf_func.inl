@@ -418,6 +418,39 @@ static inline bool gltf_apply_weights(cgltf_node* skin_node, cgltf_accessor* pos
     return true;
 }
 
+static inline bool gltf_skinning(cgltf_data* data)
+{
+    for (cgltf_size i = 0; i < data->nodes_count; ++i) {
+        const auto node = &data->nodes[i];
+        const auto mesh = node->mesh;
+        if (mesh == nullptr)
+            continue;
+        for (cgltf_size j = 0; j < mesh->primitives_count; ++j) {
+            const auto primitive = &mesh->primitives[j];
+            cgltf_accessor* acc_POSITION = nullptr;
+            cgltf_accessor* acc_JOINTS = nullptr;
+            cgltf_accessor* acc_WEIGHTS = nullptr;
+            cgltf_accessor* acc_NORMAL = nullptr;
+            for (cgltf_size k = 0; k < primitive->attributes_count; ++k) {
+                const auto attr = &primitive->attributes[k];
+                if (attr->type == cgltf_attribute_type_position) {
+                    acc_POSITION = attr->data;
+                } else if (attr->type == cgltf_attribute_type_normal) {
+                    acc_NORMAL = attr->data;
+                } else if (attr->type == cgltf_attribute_type_joints) {
+                    acc_JOINTS = attr->data;
+                } else if (attr->type == cgltf_attribute_type_weights) {
+                    acc_WEIGHTS = attr->data;
+                }
+            }
+            if (acc_POSITION && acc_JOINTS && acc_WEIGHTS) {
+                gltf_apply_weights(node, acc_POSITION, acc_JOINTS, acc_WEIGHTS, acc_NORMAL);
+            }
+        }
+    }
+    return true;
+}
+
 static inline void gltf_apply_transforms(cgltf_data* data)
 {
     gltf_apply_transform_meshes(data);

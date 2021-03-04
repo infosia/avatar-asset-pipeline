@@ -3,6 +3,16 @@
     "pattern_match": true,
     "with_any_case": true
   },
+  "pose":{
+    "T": {
+      "leftUpperArm":  {
+        "rotation": [ -0.01, 0, -0.3, 0.955 ]
+      },
+      "rightUpperArm": {
+        "rotation" : [ -0.01, 0, 0.3, 0.955 ]
+      }
+    }
+  },
   "bones":{
     "hips":"Pelvis",
     "leftUpperLeg":"L Thigh",

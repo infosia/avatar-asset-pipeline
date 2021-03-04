@@ -9,7 +9,7 @@
       ]
     }, 
     {
-      "name":"glb_pipeline",
+      "name":"gltf_pipeline",
       "components":[
         "glb_T_pose"
       ]

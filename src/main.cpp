@@ -35,9 +35,11 @@
 #define CGLTF_VRM_v0_0_IMPLEMENTATION
 #include "cgltf_write.h"
 
+#include "json_func.inl"
 #include "gltf_func.inl"
 
 #include "glb_transforms_apply.hpp"
+#include "glb_T_pose.hpp"
 #include "glb_z_reverse.hpp"
 #include "gltf_pipeline.hpp"
 #include "noop.hpp"
@@ -50,24 +52,14 @@ using namespace AvatarBuild;
 
 using json = nlohmann::json;
 
-static std::vector<std::string> get_items(std::string name, json obj)
-{
-    const auto items_obj = obj[name];
-    std::vector<std::string> items;
-    if (items_obj.is_array()) {
-        for (const auto& item : items_obj) {
-            items.push_back(item.get<std::string>());
-        }
-    }
-    return items;
-}
-
 static std::shared_ptr<DSPatch::Component> create_component(std::string name, circuit_state* state)
 {
     if (name == "glb_z_reverse") {
         return std::make_shared<DSPatch::glb_z_reverse>(state);
     } else if (name == "glb_transforms_apply") {
         return std::make_shared<DSPatch::glb_transforms_apply>(state);
+    } else if (name == "glb_T_pose") {
+        return std::make_shared<DSPatch::glb_T_pose>(state);
     } else if (name == "vrm0_default_extensions") {
         return std::make_shared<DSPatch::vrm0_default_extensions>(state);
     } else if (name == "fbx2gltf_execute") {
@@ -98,11 +90,11 @@ static std::shared_ptr<DSPatch::Component> wire_pipeline(pipeline* p, cmd_option
     return pipeline;
 }
 
-static bool build_and_start_circuits(cmd_options* options, json config_obj)
+static bool build_and_start_circuits(cmd_options* options, json config_json)
 {
-    const auto pipelines_obj = config_obj["pipelines"];
+    const auto pipelines_obj = config_json["pipelines"];
     if (!pipelines_obj.is_array()) {
-        std::cout << "[ERROR] pipeline '" << config_obj["name"] << "' is not an array" << std::endl;
+        std::cout << "[ERROR] pipeline '" << config_json["name"] << "' is not an array" << std::endl;
         return false;
     }
 
@@ -115,7 +107,7 @@ static bool build_and_start_circuits(cmd_options* options, json config_obj)
 
         pipeline p;
         p.name = obj["name"];
-        p.components = get_items("components", obj);
+        p.components = json_get_items("components", obj);
 
         auto component = wire_pipeline(&p, options);
         circuit->AddComponent(component);
@@ -134,29 +126,18 @@ static bool build_and_start_circuits(cmd_options* options, json config_obj)
 
 static bool start_pipelines(cmd_options* options)
 {
-    std::ifstream f(options->config, std::ios::in);
-    if (f.fail()) {
-        std::cout << "[ERROR] failed to parse config file " << options->config << std::endl;
+    json config_json;
+
+    if (!json_parse(options->config, &config_json)) {
         return false;
     }
 
-    json config;
-
-    try {
-        f >> config;
-
-        if (options->verbose) {
-            std::cout << "[INFO] Starting pipeline '" << config["name"] << "'" << std::endl;
-            std::cout << "[INFO] " << config["description"] << std::endl;
-        }
-
-    } catch (json::parse_error& e) {
-        std::cout << "[ERROR] failed to parse config file " << options->config << std::endl;
-        std::cout << "\t" << e.what() << std::endl;
-        return false;
+    if (options->verbose) {
+        std::cout << "[INFO] Starting pipeline '" << config_json["name"] << "'" << std::endl;
+        std::cout << "[INFO] " << config_json["description"] << std::endl;
     }
 
-    return build_and_start_circuits(options, config);
+    return build_and_start_circuits(options, config_json);
 }
 
 int main(int argc, char** argv)
@@ -189,7 +170,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    cmd_options options = { config, input, output, fbx2gltf, verbose };
+    cmd_options options = { config, input, output, bone_config, fbx2gltf, verbose };
 
     if (!start_pipelines(&options)) {
         return 1;

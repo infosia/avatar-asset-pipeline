@@ -32,6 +32,9 @@ protected:
         if (!state.discarded) {
             AVATAR_PIPELINE_LOG("[INFO] fbx_pipeline finished without errors");
         }
+
+        // redirect fbx pipeline output to gltf pipeline input. assuming gltf_pipeline is executed next
+        state.options->input = state.options->output + ".fbx.glb";
     }
 
 };

@@ -1,0 +1,12 @@
+{
+  "name":"glb_T_pose",
+  "description":"T-pose from A-pose glTF binary (.glb)",
+  "pipelines":[
+    {
+      "name":"gltf_pipeline",
+      "components":[
+        "glb_T_pose"
+      ]
+    }
+  ]
+}

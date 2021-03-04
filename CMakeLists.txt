@@ -8,7 +8,9 @@ file(GLOB pipeline_FILES components/*.hpp)
 
 set(SRC_FILES
   src/main.cpp
+  components/json_func.inl
   components/gltf_func.inl
+  components/gltf_bone_mappings.inl
   ${pipeline_FILES}
 )
 
