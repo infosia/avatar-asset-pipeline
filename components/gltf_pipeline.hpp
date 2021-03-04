@@ -10,6 +10,33 @@
 
 namespace AvatarBuild {
 
+class glb_load final : public DSPatch::Component {
+
+public:
+    glb_load()
+        : DSPatch::Component()
+    {
+        SetInputCount_(0);
+        SetOutputCount_(1);
+    }
+
+    virtual ~glb_load()
+    {
+    }
+
+    void set_data(cgltf_data* _data) 
+    {
+        data = _data;
+    }
+protected:
+    virtual void Process_(DSPatch::SignalBus const&, DSPatch::SignalBus& outputs) override
+    {
+        outputs.SetValue(0, data);
+    }
+
+    cgltf_data* data;
+};
+
 class gltf_pipeline final : public pipeline_processor {
 
 public:
@@ -17,8 +44,10 @@ public:
         : pipeline_processor(name, options)
         , data(nullptr)
         , gltf_options{}
+        , glb_loader(std::make_shared<glb_load>())
     {
-
+        circuit->AddComponent(glb_loader);
+        components.push_back(glb_loader);
     }
 
     virtual ~gltf_pipeline()
@@ -52,9 +81,7 @@ protected:
             return;
         }
 
-        state.data = data;
-
-        gltf_setup_bone_mappings(data, state.options);
+        glb_loader->set_data(data);
 
         circuit->Tick(DSPatch::Component::TickMode::Series);
        
@@ -82,7 +109,7 @@ protected:
 
     cgltf_data* data;
     cgltf_options gltf_options;
-
+    std::shared_ptr<glb_load> glb_loader;
 };
 
 } // namespace Avatar

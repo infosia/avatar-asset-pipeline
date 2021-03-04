@@ -23,7 +23,7 @@ public:
     }
 
 protected:
-    virtual void Process_(SignalBus const&, SignalBus&) override
+    virtual void Process_(SignalBus const& inputs, SignalBus& outputs) override
     {
         // just return immediately when there's critical error in previous component
         if (state->discarded) {
@@ -31,10 +31,15 @@ protected:
         }
         AVATAR_COMPONENT_LOG("[INFO] glb_transforms_apply");
 
-        cgltf_data* data = static_cast<cgltf_data*>(state->data);
-
-        gltf_apply_transforms(data);
-        gltf_update_inverse_bind_matrices(data);
+        const auto data_ptr = inputs.GetValue<cgltf_data*>(0);
+        if (data_ptr) {
+            cgltf_data* data = *data_ptr;
+            gltf_apply_transforms(data);
+            gltf_update_inverse_bind_matrices(data);
+            outputs.SetValue(0, data);
+        } else {
+            state->discarded = true;
+        }
     }
     AvatarBuild::circuit_state* state;
 };

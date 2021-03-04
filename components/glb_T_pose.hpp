@@ -22,7 +22,7 @@ public:
     }
 
 protected:
-    virtual void Process_(SignalBus const&, SignalBus&) override
+    virtual void Process_(SignalBus const& inputs, SignalBus& outputs) override
     {
         // just return immediately when there's critical error in previous component
         if (state->discarded) {
@@ -30,11 +30,17 @@ protected:
         }
         AVATAR_COMPONENT_LOG("[INFO] glb_T_pose");
 
-        cgltf_data* data = static_cast<cgltf_data*>(state->data);
+        const auto data_ptr = inputs.GetValue<cgltf_data*>(0);
 
-        // TODO rotate bones
+        if (data_ptr) {
+            cgltf_data* data = *data_ptr;
+            // TODO rotate bones
+            gltf_skinning(data);
 
-        gltf_skinning(data);
+            outputs.SetValue(0, data);
+        } else {
+            state->discarded = true;
+        }
     }
 
     AvatarBuild::circuit_state* state;

@@ -29,7 +29,6 @@ struct pipeline {
 struct circuit_state {
     cmd_options* options;
     bool discarded;
-    void* data;
 };
 
 class pipeline_processor : public DSPatch::Component {
@@ -38,7 +37,7 @@ public:
     pipeline_processor(std::string name, cmd_options* options)
         : Component()
         , name(name)
-        , state { options, false, nullptr }
+        , state { options, false }
         , circuit(std::make_shared<DSPatch::Circuit>())
     {
 
@@ -59,7 +58,7 @@ public:
         if (!components.empty()) {
             circuit->ConnectOutToIn(components.back(), 0, next, 0);        
         }
-        components.push_back(next);    
+        components.push_back(next);
     }
 
 protected:
