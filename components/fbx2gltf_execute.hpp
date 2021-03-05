@@ -46,10 +46,9 @@ namespace DSPatch {
 class fbx2gltf_execute final : public Component {
 
 public:
-    fbx2gltf_execute(AvatarBuild::circuit_state* state)
+    fbx2gltf_execute(AvatarBuild::cmd_options* options)
         : Component()
-        , state(state)
-
+        , options(options)
     {
         SetInputCount_(1);
         SetOutputCount_(1);
@@ -60,19 +59,19 @@ public:
     }
 
 protected:
-    virtual void Process_(SignalBus const&, SignalBus&) override
+    virtual void Process_(SignalBus const& inputs, SignalBus& outputs) override
     {
         // just return immediately when there's critical error in previous component
-        if (state->discarded) {
+        const auto discarded = inputs.GetValue<bool>(0);
+        if (discarded && *discarded) {
+            Reset();
             return;
         }
         AVATAR_COMPONENT_LOG("[INFO] fbx2gltf_execute");
 
-        if (run_fbx2gltf(state->options) != 0) {
-            state->discarded = true;
-        }
+        outputs.SetValue(0, run_fbx2gltf(options) != 0);
     }
-    AvatarBuild::circuit_state* state;
+    AvatarBuild::cmd_options* options;
 };
 
 } // namespace DSPatch

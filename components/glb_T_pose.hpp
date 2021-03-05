@@ -9,12 +9,12 @@ namespace DSPatch {
 class glb_T_pose final : public Component {
 
 public:
-    glb_T_pose(AvatarBuild::circuit_state* state)
+    glb_T_pose(AvatarBuild::cmd_options* options)
         : Component()
-        , state(state)
+        , options(options)
     {
-        SetInputCount_(1);
-        SetOutputCount_(1);
+        SetInputCount_(2);
+        SetOutputCount_(2);
     }
 
     virtual ~glb_T_pose()
@@ -25,25 +25,30 @@ protected:
     virtual void Process_(SignalBus const& inputs, SignalBus& outputs) override
     {
         // just return immediately when there's critical error in previous component
-        if (state->discarded) {
+        const auto discarded = inputs.GetValue<bool>(0);
+        if (discarded && *discarded) {
+            Reset();
             return;
         }
+
         AVATAR_COMPONENT_LOG("[INFO] glb_T_pose");
 
-        const auto data_ptr = inputs.GetValue<cgltf_data*>(0);
+        const auto data_ptr = inputs.GetValue<cgltf_data*>(1);
 
         if (data_ptr) {
             cgltf_data* data = *data_ptr;
             // TODO rotate bones
             gltf_skinning(data);
 
-            outputs.SetValue(0, data);
+            outputs.SetValue(0, false); // discarded
+            outputs.SetValue(1, data);  // data
         } else {
-            state->discarded = true;
+            AVATAR_COMPONENT_LOG("[ERROR] glb_T_pose: input.1 not found");
+            outputs.SetValue(0, true);    // discarded
         }
     }
 
-    AvatarBuild::circuit_state* state;
+    AvatarBuild::cmd_options* options;
 };
 
 } // namespace DSPatch

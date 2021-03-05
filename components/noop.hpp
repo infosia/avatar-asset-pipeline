@@ -9,9 +9,9 @@ namespace DSPatch {
 class noop final : public Component {
 
 public:
-    noop(AvatarBuild::circuit_state* state, std::string name)
+    noop(AvatarBuild::cmd_options* options, std::string name)
         : Component()
-        , state(state)
+        , options(options)
         , name(name)
     {
 
@@ -28,7 +28,7 @@ protected:
         AVATAR_COMPONENT_LOG("[WARN] No Component is found for '" << name << "'");    
     }
 
-    AvatarBuild::circuit_state* state;
+    AvatarBuild::cmd_options* options;
     std::string name;
 };
 

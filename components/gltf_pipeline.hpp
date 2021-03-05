@@ -10,20 +10,16 @@
 
 namespace AvatarBuild {
 
+// A component that just pass cgltf_data to signal bus
 class glb_load final : public DSPatch::Component {
-
 public:
     glb_load()
         : DSPatch::Component()
+        , data(nullptr)
     {
         SetInputCount_(0);
-        SetOutputCount_(1);
+        SetOutputCount_(2);
     }
-
-    virtual ~glb_load()
-    {
-    }
-
     void set_data(cgltf_data* _data) 
     {
         data = _data;
@@ -31,9 +27,12 @@ public:
 protected:
     virtual void Process_(DSPatch::SignalBus const&, DSPatch::SignalBus& outputs) override
     {
-        outputs.SetValue(0, data);
+        if (data == nullptr) {
+            return;
+        }
+        outputs.SetValue(0, false); // <bool>  discarded
+        outputs.SetValue(1, data);  // <void*> data
     }
-
     cgltf_data* data;
 };
 
@@ -42,31 +41,41 @@ class gltf_pipeline final : public pipeline_processor {
 public:
     gltf_pipeline(std::string name, cmd_options* options)
         : pipeline_processor(name, options)
-        , data(nullptr)
-        , gltf_options{}
-        , glb_loader(std::make_shared<glb_load>())
     {
-        circuit->AddComponent(glb_loader);
-        components.push_back(glb_loader);
+        SetInputCount_(1);
+        SetOutputCount_(1);
     }
 
     virtual ~gltf_pipeline()
     {
+    }
 
+    virtual void wire_components() override
+    {
+        glb_loader = std::make_shared<glb_load>();
+        circuit->AddComponent(glb_loader);
+
+        const auto front = components.front();
+        circuit->ConnectOutToIn(glb_loader, 0, front, 0);
+        circuit->ConnectOutToIn(glb_loader, 1, front, 1);
     }
 
 protected:
-    virtual void Process_(DSPatch::SignalBus const&, DSPatch::SignalBus&) override
+    virtual void Process_(DSPatch::SignalBus const& inputs, DSPatch::SignalBus& outputs) override
     {
-        AVATAR_PIPELINE_LOG("[INFO] gltf_pipeline start");
-
-        if (data != nullptr) {
-            AVATAR_PIPELINE_LOG("[WARN] cgltf_data leak detected. Make sure it's freed before pipeline exits.");
-            cgltf_free(data);
+        // just return immediately when there's critical error in previous component
+        const auto inputs0 = inputs.GetValue<bool>(0);
+        if (inputs0 && *inputs0) {
+            Reset();
+            return;
         }
 
-        const std::string input = state.options->input;
+        AVATAR_PIPELINE_LOG("[INFO] gltf_pipeline start");
 
+        const std::string input = options->input;
+
+        cgltf_data* data = nullptr;
+        cgltf_options gltf_options = {};
         cgltf_result result = cgltf_parse_file(&gltf_options, input.c_str(), &data);
 
         if (result != cgltf_result_success) {
@@ -85,30 +94,32 @@ protected:
 
         circuit->Tick(DSPatch::Component::TickMode::Series);
        
-        if (!state.discarded) {
+        auto discarded = tick_result->is_discarded();
+        outputs.SetValue(0, discarded);
+
+        if (!tick_result->is_discarded()) {
             result = cgltf_validate(data);
 
             if (result == cgltf_result_success) {
-                state.discarded = !gltf_write_file(data, state.options->output);
-                if (state.discarded) {
-                    AVATAR_PIPELINE_LOG("[ERROR] faild to write output " << state.options->output);                
+                discarded = !gltf_write_file(data, options->output);
+                if (discarded) {
+                    AVATAR_PIPELINE_LOG("[ERROR] faild to write output " << options->output);                
                 }
             } else {
-                state.discarded = true;
+                discarded = true;
                 AVATAR_PIPELINE_LOG("[WARN] Invalid glTF data: " << result);
             }
         }
 
         cgltf_free(data);
+        glb_loader->set_data(nullptr);
         data = nullptr;
 
-        if (!state.discarded) {
+        if (!discarded) {
             AVATAR_PIPELINE_LOG("[INFO] gltf_pipeline finished without errors");
         }
     }
 
-    cgltf_data* data;
-    cgltf_options gltf_options;
     std::shared_ptr<glb_load> glb_loader;
 };
 

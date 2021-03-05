@@ -52,20 +52,20 @@ using namespace AvatarBuild;
 
 using json = nlohmann::json;
 
-static std::shared_ptr<DSPatch::Component> create_component(std::string name, circuit_state* state)
+static std::shared_ptr<DSPatch::Component> create_component(std::string name, cmd_options* options)
 {
     if (name == "glb_z_reverse") {
-        return std::make_shared<DSPatch::glb_z_reverse>(state);
+        return std::make_shared<DSPatch::glb_z_reverse>(options);
     } else if (name == "glb_transforms_apply") {
-        return std::make_shared<DSPatch::glb_transforms_apply>(state);
+        return std::make_shared<DSPatch::glb_transforms_apply>(options);
     } else if (name == "glb_T_pose") {
-        return std::make_shared<DSPatch::glb_T_pose>(state);
+        return std::make_shared<DSPatch::glb_T_pose>(options);
     } else if (name == "vrm0_default_extensions") {
-        return std::make_shared<DSPatch::vrm0_default_extensions>(state);
+        return std::make_shared<DSPatch::vrm0_default_extensions>(options);
     } else if (name == "fbx2gltf_execute") {
-        return std::make_shared<DSPatch::fbx2gltf_execute>(state);
+        return std::make_shared<DSPatch::fbx2gltf_execute>(options);
     }
-    return std::make_shared<DSPatch::noop>(state, name);
+    return std::make_shared<DSPatch::noop>(options, name);
 }
 
 static std::shared_ptr<pipeline_processor> create_pipeline(std::string name, cmd_options* options)
@@ -81,11 +81,12 @@ static std::shared_ptr<pipeline_processor> create_pipeline(std::string name, cmd
 static std::shared_ptr<DSPatch::Component> wire_pipeline(pipeline* p, cmd_options* options)
 {
     const auto pipeline = create_pipeline(p->name, options);
-    const auto state = pipeline->get_state();
 
     for (size_t i = 0; i < p->components.size(); ++i) {
-        pipeline->add_component(create_component(p->components[i], state));
+        pipeline->add_component(create_component(p->components[i], options));
     }
+
+    pipeline->wire_components();
 
     return pipeline;
 }
@@ -119,6 +120,8 @@ static bool build_and_start_circuits(cmd_options* options, json config_json)
         previous = component;
     }
 
+    // make sure to execute pipeline in TickMode::Series
+    // because pipeline has state and not thread safe.
     circuit->Tick(DSPatch::Component::TickMode::Series);
 
     return true;
