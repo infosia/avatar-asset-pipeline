@@ -154,6 +154,14 @@ static inline void gltf_reverse_z(cgltf_data* data)
             }
         }
     }
+
+    for (cgltf_size i = 0; i < data->nodes_count; ++i) {
+        const auto node = &data->nodes[i];
+        if (node->has_translation) {
+            node->translation[0] = -node->translation[0];
+            node->translation[2] = -node->translation[2];
+        }
+    }
 }
 
 static inline uint32_t gltf_get_buffer_size(cgltf_data* data)
