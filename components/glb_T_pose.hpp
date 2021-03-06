@@ -41,6 +41,7 @@ protected:
             AvatarBuild::bone_mappings* mappings = *bones_ptr;
             if (gltf_apply_pose("T", mappings)) {
                 gltf_skinning(data);            
+                gltf_update_inverse_bind_matrices(data);
             }
             outputs.SetValue(0, false); // discarded
             outputs.SetValue(1, data);  // data
