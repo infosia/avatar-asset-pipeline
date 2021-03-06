@@ -20,10 +20,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include <string>
-#include <vector>
-#include <unordered_map>
 #include "json.hpp"
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 #pragma warning(push)
 #pragma warning(disable : 4458) // declaration of 'source' hides class member
@@ -31,6 +31,29 @@
 #pragma warning(pop)
 
 using json = nlohmann::json;
+
+static bool gltf_apply_pose(std::string name, AvatarBuild::bone_mappings* mappings)
+{
+    std::size_t node_count = 0;
+    const auto pose_found = mappings->poses.find(name);
+    if (pose_found != mappings->poses.end()) {
+        const auto pose = pose_found->second;
+        for (const auto bone : pose.bones) {
+            const auto bone_found = mappings->name_to_node.find(bone.name);
+            if (bone_found != mappings->name_to_node.end()) {
+                const auto node = bone_found->second;
+                node->rotation[0] = bone.rotation[0];
+                node->rotation[1] = bone.rotation[1];
+                node->rotation[2] = bone.rotation[2];
+                node->rotation[3] = bone.rotation[3];
+                node_count++;
+            }
+        }
+    } else {
+        return false;
+    }
+    return node_count > 0;
+}
 
 static std::unordered_map<std::string, cgltf_node*> gltf_parse_bones_to_node(json input, cgltf_data* data)
 {

@@ -1,8 +1,8 @@
 #pragma once
 
+#include <iostream>
 #include "DSPatch.h"
 #include "pipelines.hpp"
-#include <iostream>
 
 namespace DSPatch {
 
@@ -38,9 +38,10 @@ protected:
 
         if (data_ptr && bones_ptr) {
             cgltf_data* data = *data_ptr;
-            // TODO rotate bones
-            gltf_skinning(data);
-
+            AvatarBuild::bone_mappings* mappings = *bones_ptr;
+            if (gltf_apply_pose("T", mappings)) {
+                gltf_skinning(data);            
+            }
             outputs.SetValue(0, false); // discarded
             outputs.SetValue(1, data);  // data
             outputs.SetValue(2, *bones_ptr);  // bone_mappings

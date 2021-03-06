@@ -6,10 +6,10 @@
   "poses":{
     "T": {
       "leftUpperArm":  {
-        "rotation": [ -0.01, 0, -0.3, 0.955 ]
+        "rotation": [ -0.01, 0, 0.3, 0.955 ]
       },
       "rightUpperArm": {
-        "rotation" : [ -0.01, 0, 0.3, 0.955 ]
+        "rotation" : [ -0.01, 0, -0.3, 0.955 ]
       }
     }
   },

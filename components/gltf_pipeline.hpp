@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "pipelines.hpp"
-#include "gltf_bone_mappings.inl"
 
 namespace AvatarBuild {
 

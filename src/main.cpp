@@ -35,8 +35,10 @@
 #define CGLTF_VRM_v0_0_IMPLEMENTATION
 #include "cgltf_write.h"
 
+#include "pipelines.hpp"
 #include "gltf_func.inl"
 #include "json_func.inl"
+#include "gltf_bone_mappings.inl"
 
 #include "glb_T_pose.hpp"
 #include "glb_transforms_apply.hpp"
