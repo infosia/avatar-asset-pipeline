@@ -82,9 +82,10 @@ protected:
             return;
         }
 
-        AVATAR_PIPELINE_LOG("[INFO] gltf_pipeline start");
-
         const std::string input = options->input;
+
+        AVATAR_PIPELINE_LOG("[INFO] gltf_pipeline start");
+        AVATAR_PIPELINE_LOG("[INFO] reading " << input);
 
         cgltf_data* data = nullptr;
         cgltf_options gltf_options = {};
@@ -113,6 +114,7 @@ protected:
             result = cgltf_validate(data);
 
             if (result == cgltf_result_success) {
+                AVATAR_PIPELINE_LOG("[INFO] writing " << options->output);
                 discarded = !gltf_write_file(data, options->output);
                 if (discarded) {
                     AVATAR_PIPELINE_LOG("[ERROR] faild to write output " << options->output);                

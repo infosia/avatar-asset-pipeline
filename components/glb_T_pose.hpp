@@ -40,7 +40,7 @@ protected:
             cgltf_data* data = *data_ptr;
             AvatarBuild::bone_mappings* mappings = *bones_ptr;
             if (gltf_apply_pose("T", mappings)) {
-                gltf_skinning(data);            
+                gltf_skinning(data);
                 gltf_update_inverse_bind_matrices(data);
             }
             outputs.SetValue(0, false); // discarded

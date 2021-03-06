@@ -42,10 +42,18 @@ static bool gltf_apply_pose(std::string name, AvatarBuild::bone_mappings* mappin
             const auto bone_found = mappings->name_to_node.find(bone.name);
             if (bone_found != mappings->name_to_node.end()) {
                 const auto node = bone_found->second;
-                node->rotation[0] = bone.rotation[0];
-                node->rotation[1] = bone.rotation[1];
-                node->rotation[2] = bone.rotation[2];
-                node->rotation[3] = bone.rotation[3];
+
+                glm::quat a = glm::make_quat(node->rotation);
+                glm::quat b = glm::make_quat(bone.rotation);
+
+                // apply given rotation to the bone
+                glm::quat r = a * b;
+
+                node->rotation[0] = r.x;
+                node->rotation[1] = r.y;
+                node->rotation[2] = r.z;
+                node->rotation[3] = r.w;
+
                 node_count++;
             }
         }
