@@ -22,11 +22,123 @@
  */
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include "json.hpp"
+
+#pragma warning(push)
+#pragma warning(disable : 4458) // declaration of 'source' hides class member
+#include "verbalexpressions.hpp"
+#pragma warning(pop)
 
 using json = nlohmann::json;
 
-static inline void gltf_setup_bone_mappings(cgltf_data* data, AvatarBuild::cmd_options* options) 
+static std::unordered_map<std::string, cgltf_node*> gltf_parse_bones_to_node(json input, cgltf_data* data)
 {
-	(void)data, options;
+    std::unordered_map<std::string, cgltf_node*> name_to_node;
+
+    // search config
+    bool pattern_match = true;
+    bool with_any_case = true;
+    auto config = input["config"];
+    if (config.is_object()) {
+        pattern_match = json_get_bool(config, "pattern_match");
+        with_any_case = json_get_bool(config, "with_any_case");
+    }
+
+    std::unordered_map<std::string, cgltf_node*> nodes;
+    for (cgltf_size i = 0; i < data->nodes_count; ++i) {
+        const auto node = &data->nodes[i];
+        if (node->name != nullptr) {
+            nodes.emplace(node->name, node);
+        }
+    }
+
+    auto bones_object = input["bones"].items();
+    for (auto bone_object : bones_object) {
+        const auto key = bone_object.key();
+        const auto bone_name = bone_object.value().get<std::string>();
+
+        bool found = false;
+        std::string actual_name;
+        if (pattern_match) {
+            auto expr = verex::verex().search_one_line().anything().find(bone_name).anything().with_any_case(with_any_case);
+            for (const auto node : nodes) {
+                const auto node_name = node.first;
+                if (bone_name == node_name || expr.test(node_name)) {
+                    name_to_node.emplace(key, node.second);
+                    actual_name = node_name;
+                    found = true;
+                    break;
+                }
+            }
+        } else {
+            for (const auto node : nodes) {
+                const auto node_name = node.first;
+                if (bone_name == node_name) {
+                    name_to_node.emplace(key, node.second);
+                    actual_name = node_name;
+                    found = true;
+                    break;
+                }
+            }
+        }
+        if (found && !actual_name.empty()) {
+            nodes.erase(actual_name);
+        }
+    }
+    return name_to_node;
+}
+
+static std::unordered_map<std::string, AvatarBuild::pose> gltf_parse_bone_poses(json poses_obj)
+{
+    std::unordered_map<std::string, AvatarBuild::pose> poses;
+
+    auto items = poses_obj.items();
+    for (auto pose_obj : items) {
+        const auto pose_name = pose_obj.key();
+        auto bones = pose_obj.value().items();
+
+        AvatarBuild::pose pose = {};
+        pose.name = pose_name;
+
+        for (auto bone_obj : bones) {
+            const auto bone_name = bone_obj.key();
+            auto props = bone_obj.value();
+
+            AvatarBuild::bone bone = {};
+            bone.name = bone_name;
+
+            auto rotation = props["rotation"];
+
+            if (rotation.is_array()) {
+                bone.rotation[0] = rotation[0].get<float>();
+                bone.rotation[1] = rotation[1].get<float>();
+                bone.rotation[2] = rotation[2].get<float>();
+                bone.rotation[3] = rotation[3].get<float>();
+            }
+            pose.bones.push_back(bone);
+        }
+        poses.emplace(pose.name, pose);
+    }
+
+    return poses;
+}
+
+static bool gltf_parse_bone_mappings(cgltf_data* data, AvatarBuild::bone_mappings* mappings, AvatarBuild::cmd_options* options)
+{
+    (void)data, mappings;
+
+    json j;
+    if (!json_parse(options->bone_config, &j)) {
+        return false;
+    }
+
+    try {
+        mappings->poses = gltf_parse_bone_poses(j["poses"]);
+        mappings->name_to_node = gltf_parse_bones_to_node(j, data);
+    } catch (json::exception&) {
+        return false;
+    }
+
+    return true;
 }

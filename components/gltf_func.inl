@@ -47,7 +47,7 @@ static void gltf_f3_max(cgltf_float* a, cgltf_float* b, cgltf_float* out)
     out[2] = a[2] > b[2] ? a[2] : b[2];
 }
 
-static inline void gltf_reverse_z_accessor(cgltf_accessor* accessor)
+static void gltf_reverse_z_accessor(cgltf_accessor* accessor)
 {
     uint8_t* buffer_data = (uint8_t*)accessor->buffer_view->buffer->data + accessor->buffer_view->offset + accessor->offset;
 
@@ -108,7 +108,7 @@ static void gltf_apply_transform_accessor(cgltf_node* node, cgltf_accessor* acce
     }
 }
 
-static inline void gltf_reverse_z(cgltf_data* data)
+static void gltf_reverse_z(cgltf_data* data)
 {
     std::set<cgltf_accessor*> accessor_coord_done;
     for (cgltf_size i = 0; i < data->nodes_count; ++i) {
@@ -164,7 +164,7 @@ static inline void gltf_reverse_z(cgltf_data* data)
     }
 }
 
-static inline uint32_t gltf_get_buffer_size(cgltf_data* data)
+static uint32_t gltf_get_buffer_size(cgltf_data* data)
 {
     uint32_t size = 0;
     for (cgltf_size i = 0; i < data->buffers_count; ++i) {
@@ -176,7 +176,7 @@ static inline uint32_t gltf_get_buffer_size(cgltf_data* data)
     return size;
 }
 
-static inline std::string gltf_get_json(cgltf_data* data)
+static std::string gltf_get_json(cgltf_data* data)
 {
     cgltf_options options = {};
     auto size = cgltf_write(&options, NULL, 0, data);
@@ -202,7 +202,7 @@ static inline std::string gltf_get_json(cgltf_data* data)
     return "";
 }
 
-static inline bool gltf_write_file(cgltf_data* data, std::string output)
+static bool gltf_write_file(cgltf_data* data, std::string output)
 {
     std::ofstream fout(output, std::ios::trunc | std::ios::binary);
     if (fout.fail()) {
@@ -242,7 +242,7 @@ static inline bool gltf_write_file(cgltf_data* data, std::string output)
     return true;
 }
 
-static inline glm::mat4 gltf_get_node_transform(const cgltf_node* node)
+static glm::mat4 gltf_get_node_transform(const cgltf_node* node)
 {
     auto matrix = glm::mat4(1.0f);
     auto translation = glm::make_vec3(node->translation);
@@ -252,7 +252,7 @@ static inline glm::mat4 gltf_get_node_transform(const cgltf_node* node)
     return glm::translate(glm::mat4(1.0f), translation) * glm::mat4(rotation) * glm::scale(glm::mat4(1.0f), scale) * matrix;
 }
 
-static inline glm::mat4 gltf_get_global_node_transform(const cgltf_node* node)
+static glm::mat4 gltf_get_global_node_transform(const cgltf_node* node)
 {
     auto m = gltf_get_node_transform(node);
     cgltf_node* parent = node->parent;
@@ -264,7 +264,7 @@ static inline glm::mat4 gltf_get_global_node_transform(const cgltf_node* node)
     return m;
 }
 
-static inline void gltf_apply_transform_meshes(cgltf_data* data)
+static void gltf_apply_transform_meshes(cgltf_data* data)
 {
     std::set<cgltf_accessor*> accessor_coord_done;
     for (cgltf_size i = 0; i < data->nodes_count; ++i) {
@@ -399,7 +399,7 @@ static bool gltf_apply_weight(cgltf_node* skin_node, cgltf_float* positions, cgl
     return true;
 }
 
-static inline bool gltf_apply_weights(cgltf_node* skin_node, cgltf_accessor* positions, cgltf_accessor* joints, cgltf_accessor* weights, cgltf_accessor* normals)
+static bool gltf_apply_weights(cgltf_node* skin_node, cgltf_accessor* positions, cgltf_accessor* joints, cgltf_accessor* weights, cgltf_accessor* normals)
 {
     cgltf_uint* joints_data = (cgltf_uint*)calloc(joints->count * 4, sizeof(cgltf_uint));
     for (cgltf_size i = 0; i < joints->count; ++i) {
@@ -426,7 +426,7 @@ static inline bool gltf_apply_weights(cgltf_node* skin_node, cgltf_accessor* pos
     return true;
 }
 
-static inline bool gltf_skinning(cgltf_data* data)
+static bool gltf_skinning(cgltf_data* data)
 {
     for (cgltf_size i = 0; i < data->nodes_count; ++i) {
         const auto node = &data->nodes[i];
@@ -459,7 +459,7 @@ static inline bool gltf_skinning(cgltf_data* data)
     return true;
 }
 
-static inline void gltf_apply_transforms(cgltf_data* data)
+static void gltf_apply_transforms(cgltf_data* data)
 {
     gltf_apply_transform_meshes(data);
 
@@ -472,7 +472,7 @@ static inline void gltf_apply_transforms(cgltf_data* data)
     }
 }
 
-static inline void gltf_update_inverse_bind_matrices(cgltf_data* data)
+static void gltf_update_inverse_bind_matrices(cgltf_data* data)
 {
     std::set<cgltf_accessor*> skin_done;
     for (cgltf_size i = 0; i < data->skins_count; ++i) {

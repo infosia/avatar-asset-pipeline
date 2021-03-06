@@ -35,18 +35,18 @@
 #define CGLTF_VRM_v0_0_IMPLEMENTATION
 #include "cgltf_write.h"
 
-#include "json_func.inl"
 #include "gltf_func.inl"
+#include "json_func.inl"
 
-#include "glb_transforms_apply.hpp"
 #include "glb_T_pose.hpp"
+#include "glb_transforms_apply.hpp"
 #include "glb_z_reverse.hpp"
 #include "gltf_pipeline.hpp"
 #include "noop.hpp"
 #include "vrm0_default_extensions.hpp"
 
-#include "fbx_pipeline.hpp"
 #include "fbx2gltf_execute.hpp"
+#include "fbx_pipeline.hpp"
 
 using namespace AvatarBuild;
 
@@ -93,38 +93,44 @@ static std::shared_ptr<DSPatch::Component> wire_pipeline(pipeline* p, cmd_option
 
 static bool build_and_start_circuits(cmd_options* options, json config_json)
 {
-    const auto pipelines_obj = config_json["pipelines"];
-    if (!pipelines_obj.is_array()) {
-        std::cout << "[ERROR] pipeline '" << config_json["name"] << "' is not an array" << std::endl;
-        return false;
-    }
-
-    auto circuit = std::make_shared<DSPatch::Circuit>();
-    auto pipeline_count = pipelines_obj.size();
-
-    std::shared_ptr<DSPatch::Component> previous;
-    for (size_t i = 0; i < pipeline_count; ++i) {
-        const auto& obj = pipelines_obj[i];
-
-        pipeline p;
-        p.name = obj["name"];
-        p.components = json_get_items("components", obj);
-
-        auto component = wire_pipeline(&p, options);
-        circuit->AddComponent(component);
-
-        if (i > 0) {
-            circuit->ConnectOutToIn(previous, 0, component, 0);
+    try {
+        const auto pipelines_obj = config_json["pipelines"];
+        if (!pipelines_obj.is_array()) {
+            std::cout << "[ERROR] pipeline '" << config_json["name"] << "' is not an array" << std::endl;
+            return false;
         }
 
-        previous = component;
+        auto circuit = std::make_shared<DSPatch::Circuit>();
+        auto pipeline_count = pipelines_obj.size();
+
+        std::shared_ptr<DSPatch::Component> previous;
+        for (size_t i = 0; i < pipeline_count; ++i) {
+            const auto& obj = pipelines_obj[i];
+
+            pipeline p;
+            p.name = obj["name"];
+            p.components = json_get_string_items("components", obj);
+
+            auto component = wire_pipeline(&p, options);
+            circuit->AddComponent(component);
+
+            if (i > 0) {
+                circuit->ConnectOutToIn(previous, 0, component, 0);
+            }
+
+            previous = component;
+        }
+
+        // make sure to execute pipeline in TickMode::Series
+        // because pipeline has state and not thread safe.
+        circuit->Tick(DSPatch::Component::TickMode::Series);
+
+        return true;
+    } catch (json::exception& e) {
+        std::cout << "[ERROR] error while parsing pipeline '" << config_json["name"] << "'" << std::endl;
+        std::cout << "\t " << e.what() << std::endl;
+        return false;
     }
-
-    // make sure to execute pipeline in TickMode::Series
-    // because pipeline has state and not thread safe.
-    circuit->Tick(DSPatch::Component::TickMode::Series);
-
-    return true;
 }
 
 static bool start_pipelines(cmd_options* options)

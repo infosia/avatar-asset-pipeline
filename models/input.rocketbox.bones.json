@@ -3,7 +3,7 @@
     "pattern_match": true,
     "with_any_case": true
   },
-  "pose":{
+  "poses":{
     "T": {
       "leftUpperArm":  {
         "rotation": [ -0.01, 0, -0.3, 0.955 ]

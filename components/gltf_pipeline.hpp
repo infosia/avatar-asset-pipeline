@@ -13,16 +13,23 @@ namespace AvatarBuild {
 // A component that just pass cgltf_data to signal bus
 class glb_load final : public DSPatch::Component {
 public:
-    glb_load()
+    glb_load(cmd_options* options)
         : DSPatch::Component()
         , data(nullptr)
+        , options(options)
     {
         SetInputCount_(0);
-        SetOutputCount_(2);
+        SetOutputCount_(4);
     }
-    void set_data(cgltf_data* _data) 
+    void set_data(cgltf_data* _data)
     {
         data = _data;
+
+        if (data != nullptr) {
+            if (!gltf_parse_bone_mappings(data, &bone_mappings, options)) {
+                AVATAR_COMPONENT_LOG("[ERROR] failed to load bone mappings");
+            }
+        }
     }
 protected:
     virtual void Process_(DSPatch::SignalBus const&, DSPatch::SignalBus& outputs) override
@@ -30,10 +37,14 @@ protected:
         if (data == nullptr) {
             return;
         }
-        outputs.SetValue(0, false); // <bool>  discarded
-        outputs.SetValue(1, data);  // <void*> data
+        outputs.SetValue(0, false);    // <bool>  discarded
+        outputs.SetValue(1, data);     // cgltf_data*
+        outputs.SetValue(2, nullptr);  // data2
+        outputs.SetValue(3, nullptr);  // data3
     }
     cgltf_data* data;
+    cmd_options* options;
+    bone_mappings bone_mappings;
 };
 
 class gltf_pipeline final : public pipeline_processor {
@@ -52,12 +63,14 @@ public:
 
     virtual void wire_components() override
     {
-        glb_loader = std::make_shared<glb_load>();
+        glb_loader = std::make_shared<glb_load>(options);
         circuit->AddComponent(glb_loader);
 
         const auto front = components.front();
         circuit->ConnectOutToIn(glb_loader, 0, front, 0);
         circuit->ConnectOutToIn(glb_loader, 1, front, 1);
+        circuit->ConnectOutToIn(glb_loader, 2, front, 2);
+        circuit->ConnectOutToIn(glb_loader, 3, front, 3);
     }
 
 protected:

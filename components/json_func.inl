@@ -26,7 +26,18 @@
 
 using json = nlohmann::json;
 
-static inline std::vector<std::string> json_get_items(std::string name, json obj)
+static bool json_get_bool(json object, std::string name)
+{
+    if (object.is_object()) {
+        auto value = object[name];
+        if (value.is_boolean()) {
+            return value.get<bool>();
+        }
+    }
+    return false;
+}
+
+static std::vector<std::string> json_get_string_items(std::string name, json obj)
 {
     const auto items_obj = obj[name];
     std::vector<std::string> items;
@@ -38,7 +49,7 @@ static inline std::vector<std::string> json_get_items(std::string name, json obj
     return items;
 }
 
-static inline bool json_parse(std::string json_file, json* json)
+static bool json_parse(std::string json_file, json* json)
 {
     std::ifstream f(json_file, std::ios::in);
     if (f.fail()) {

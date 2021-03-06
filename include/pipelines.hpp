@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <unordered_map>
 
 #include "json.hpp"
 
@@ -24,6 +25,21 @@ struct cmd_options {
 struct pipeline {
     std::string name;
     std::vector<std::string> components;
+};
+
+struct bone {
+    std::string name;
+    cgltf_float rotation[4];
+};
+
+struct pose {
+    std::string name;
+    std::vector<bone> bones;
+};
+
+struct bone_mappings {
+    std::unordered_map<std::string, pose> poses;
+    std::unordered_map<std::string, cgltf_node*> name_to_node;
 };
 
 // A component that just get result from signal bus
@@ -72,8 +88,11 @@ public:
     {
         circuit->AddComponent(next);
         if (!components.empty()) {
-            circuit->ConnectOutToIn(components.back(), 0, next, 0); // <bool>  discarded
-            circuit->ConnectOutToIn(components.back(), 1, next, 1); // <void*> data
+            const auto back = components.back();
+            circuit->ConnectOutToIn(back, 0, next, 0); // <bool>  discarded
+            circuit->ConnectOutToIn(back, 1, next, 1); // <void*> data1
+            circuit->ConnectOutToIn(back, 2, next, 2); // <void*> data2
+            circuit->ConnectOutToIn(back, 3, next, 3); // <void*> data3
         }
         components.push_back(next);
     }
