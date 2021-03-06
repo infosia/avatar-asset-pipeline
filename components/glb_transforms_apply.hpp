@@ -14,8 +14,8 @@ public:
         , options(options)
 
     {
-        SetInputCount_(2);
-        SetOutputCount_(2);
+        SetInputCount_(3);
+        SetOutputCount_(3);
     }
 
     virtual ~glb_transforms_apply()
@@ -34,12 +34,16 @@ protected:
         AVATAR_COMPONENT_LOG("[INFO] glb_transforms_apply");
 
         const auto data_ptr = inputs.GetValue<cgltf_data*>(1);
-        if (data_ptr) {
+        const auto bones_ptr = inputs.GetValue<AvatarBuild::bone_mappings*>(2);
+
+        if (data_ptr && bones_ptr) {
             cgltf_data* data = *data_ptr;
-            gltf_apply_transforms(data);
+            AvatarBuild::bone_mappings* mappings = *bones_ptr;
+            gltf_apply_transforms(data, mappings->name_to_node);
             gltf_update_inverse_bind_matrices(data);
             outputs.SetValue(0, false);    // discarded
             outputs.SetValue(1, data);
+            outputs.SetValue(2, *bones_ptr);
         } else {
             AVATAR_COMPONENT_LOG("[ERROR] glb_transforms_apply: input.1 not found");
             outputs.SetValue(0, true);    // discarded

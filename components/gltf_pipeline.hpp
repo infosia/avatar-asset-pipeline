@@ -39,7 +39,7 @@ protected:
         }
         outputs.SetValue(0, false);    // <bool>  discarded
         outputs.SetValue(1, data);     // cgltf_data*
-        outputs.SetValue(2, nullptr);  // data2
+        outputs.SetValue(2, &bone_mappings);  // bone_mappings*
         outputs.SetValue(3, nullptr);  // data3
     }
     cgltf_data* data;

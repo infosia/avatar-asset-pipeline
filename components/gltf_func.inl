@@ -459,7 +459,7 @@ static bool gltf_skinning(cgltf_data* data)
     return true;
 }
 
-static void gltf_apply_transforms(cgltf_data* data)
+static void gltf_apply_transforms(cgltf_data* data, std::unordered_map<std::string, cgltf_node*>& name_to_node)
 {
     gltf_apply_transform_meshes(data);
 
@@ -469,6 +469,27 @@ static void gltf_apply_transforms(cgltf_data* data)
         for (cgltf_size j = 0; j < scene->nodes_count; ++j) {
             gltf_apply_transform(scene->nodes[j], identity);
         }
+    }
+
+    // clear translation of hips parents
+    const auto hips_found = name_to_node.find("hips");
+    if (hips_found != name_to_node.end()) {
+        const auto bone_hips = hips_found->second;
+        glm::vec3 offset_translation = { 0, 0, 0 };
+        auto node = bone_hips->parent;
+        while (node != nullptr) {
+            offset_translation.x += node->translation[0];
+            offset_translation.y += node->translation[1];
+            offset_translation.z += node->translation[2];
+
+            node->translation[0] = 0;
+            node->translation[1] = 0;
+            node->translation[2] = 0;
+            node = node->parent;
+        }
+        bone_hips->translation[0] += offset_translation.x;
+        bone_hips->translation[1] += offset_translation.y;
+        bone_hips->translation[2] += offset_translation.z;
     }
 }
 

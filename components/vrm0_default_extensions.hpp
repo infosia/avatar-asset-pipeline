@@ -12,8 +12,8 @@ public:
         : Component()
         , options(options)
     {
-        SetInputCount_(2);
-        SetOutputCount_(2);
+        SetInputCount_(3);
+        SetOutputCount_(3);
     }
 
     virtual ~vrm0_default_extensions()
