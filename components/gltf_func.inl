@@ -51,18 +51,18 @@ static void gltf_reverse_z_accessor(cgltf_accessor* accessor)
 {
     uint8_t* buffer_data = (uint8_t*)accessor->buffer_view->buffer->data + accessor->buffer_view->offset + accessor->offset;
 
-    accessor->max[0] = -FLT_MAX;
-    accessor->max[2] = -FLT_MAX;
-    accessor->min[0] = FLT_MAX;
-    accessor->min[2] = FLT_MAX;
+    accessor->max[12] = -FLT_MAX;
+    accessor->max[14] = -FLT_MAX;
+    accessor->min[12] = FLT_MAX;
+    accessor->min[14] = FLT_MAX;
 
     for (cgltf_size i = 0; i < accessor->count; ++i) {
         cgltf_float* element = (cgltf_float*)(buffer_data + (accessor->stride * i));
         element[0] = -element[0];
         element[2] = -element[2];
 
-        gltf_f3_max(element, accessor->max, accessor->max);
-        gltf_f3_min(element, accessor->min, accessor->min);
+        gltf_f3_max(element, accessor->max + 12, accessor->max + 12);
+        gltf_f3_min(element, accessor->min + 12, accessor->min + 12);
     }
 }
 
@@ -70,12 +70,12 @@ static void gltf_apply_transform_accessor(cgltf_node* node, cgltf_accessor* acce
 {
     uint8_t* buffer_data = (uint8_t*)accessor->buffer_view->buffer->data + accessor->buffer_view->offset + accessor->offset;
 
-    accessor->max[0] = -FLT_MAX;
-    accessor->max[1] = -FLT_MAX;
-    accessor->max[2] = -FLT_MAX;
-    accessor->min[0] = FLT_MAX;
-    accessor->min[1] = FLT_MAX;
-    accessor->min[2] = FLT_MAX;
+    accessor->max[12] = -FLT_MAX;
+    accessor->max[13] = -FLT_MAX;
+    accessor->max[14] = -FLT_MAX;
+    accessor->min[12] = FLT_MAX;
+    accessor->min[13] = FLT_MAX;
+    accessor->min[14] = FLT_MAX;
 
     for (cgltf_size i = 0; i < accessor->count; ++i) {
         cgltf_float* element = (cgltf_float*)(buffer_data + (accessor->stride * i));
@@ -103,8 +103,8 @@ static void gltf_apply_transform_accessor(cgltf_node* node, cgltf_accessor* acce
             element[2] = newpos.z;
         }
 
-        gltf_f3_max(element, accessor->max, accessor->max);
-        gltf_f3_min(element, accessor->min, accessor->min);
+        gltf_f3_max(element, accessor->max + 12, accessor->max + 12);
+        gltf_f3_min(element, accessor->min + 12, accessor->min + 12);
     }
 }
 
@@ -273,7 +273,7 @@ static bool gltf_is_joint_node(const cgltf_node* node)
 
     // node that has mesh child is not a joint
     for (cgltf_size i = 0; i < node->children_count; i++) {
-        if (node->children[i]->mesh != nullptr) 
+        if (node->children[i]->mesh != nullptr)
             return false;
     }
 
@@ -378,6 +378,29 @@ static void gltf_apply_transform(cgltf_node* node, const glm::mat4 parent_matrix
     }
 }
 
+static inline void gltf_from_mat4_to_floats(const glm::mat4& from, cgltf_float* to)
+{
+    to[0] = from[0][0];
+    to[1] = from[0][1];
+    to[2] = from[0][2];
+    to[3] = from[0][3];
+
+    to[4] = from[1][0];
+    to[5] = from[1][1];
+    to[6] = from[1][2];
+    to[7] = from[1][3];
+
+    to[8] = from[2][0];
+    to[9] = from[2][1];
+    to[10] = from[2][2];
+    to[11] = from[2][3];
+
+    to[12] = from[3][0];
+    to[13] = from[3][1];
+    to[14] = from[3][2];
+    to[15] = from[3][3];
+}
+
 static bool gltf_apply_weight(cgltf_node* skin_node, cgltf_float* positions, cgltf_uint* joints, cgltf_float* weights, cgltf_float* normals, bool joint_transform)
 {
     glm::mat4 skinMat = glm::mat4(0.f);
@@ -449,12 +472,12 @@ static bool gltf_apply_weights(cgltf_node* skin_node, cgltf_accessor* positions,
         normals_data = (uint8_t*)normals->buffer_view->buffer->data + normals->buffer_view->offset + normals->offset;
     }
 
-    positions->max[0] = -FLT_MAX;
-    positions->max[1] = -FLT_MAX;
-    positions->max[2] = -FLT_MAX;
-    positions->min[0] = FLT_MAX;
-    positions->min[1] = FLT_MAX;
-    positions->min[2] = FLT_MAX;
+    positions->max[12] = -FLT_MAX;
+    positions->max[13] = -FLT_MAX;
+    positions->max[14] = -FLT_MAX;
+    positions->min[12] = FLT_MAX;
+    positions->min[13] = FLT_MAX;
+    positions->min[14] = FLT_MAX;
 
     for (cgltf_size i = 0; i < positions->count; ++i) {
         cgltf_float* position = (cgltf_float*)(positions_data + (positions->stride * i));
@@ -462,8 +485,8 @@ static bool gltf_apply_weights(cgltf_node* skin_node, cgltf_accessor* positions,
 
         gltf_apply_weight(skin_node, position, joints_data + (i * 4), weights_data + (i * 4), normal, joint_transform);
 
-        gltf_f3_max(position, positions->max, positions->max);
-        gltf_f3_min(position, positions->min, positions->min);
+        gltf_f3_max(position, positions->max + 12, positions->max + 12);
+        gltf_f3_min(position, positions->min + 12, positions->min + 12);
     }
 
     return true;
@@ -563,22 +586,7 @@ static void gltf_update_inverse_bind_matrices(cgltf_data* data)
 
             glm::mat4 inversed = glm::inverse(gltf_get_global_node_transform(node));
 
-            inverse_bind_matrix[0] = inversed[0][0];
-            inverse_bind_matrix[1] = inversed[0][1];
-            inverse_bind_matrix[2] = inversed[0][2];
-            inverse_bind_matrix[3] = inversed[0][3];
-            inverse_bind_matrix[4] = inversed[1][0];
-            inverse_bind_matrix[5] = inversed[1][1];
-            inverse_bind_matrix[6] = inversed[1][2];
-            inverse_bind_matrix[7] = inversed[1][3];
-            inverse_bind_matrix[8] = inversed[2][0];
-            inverse_bind_matrix[9] = inversed[2][1];
-            inverse_bind_matrix[10] = inversed[2][2];
-            inverse_bind_matrix[11] = inversed[2][3];
-            inverse_bind_matrix[12] = inversed[3][0];
-            inverse_bind_matrix[13] = inversed[3][1];
-            inverse_bind_matrix[14] = inversed[3][2];
-            inverse_bind_matrix[15] = inversed[3][3];
+            gltf_from_mat4_to_floats(inversed, inverse_bind_matrix);
 
             gltf_f3_max(inverse_bind_matrix + 12, accessor->max + 12, accessor->max + 12);
             gltf_f3_min(inverse_bind_matrix + 12, accessor->min + 12, accessor->min + 12);
