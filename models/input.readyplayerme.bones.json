@@ -1,15 +1,15 @@
 {
   "config":{
     "pattern_match": true,
-    "with_any_case": true,
+    "with_any_case": true
   },
-  "pose":{
+  "poses":{
     "T": {
       "leftUpperArm":  {
-        "rotation": [ -0.119, 0, 0, 0.993 ]
+        "rotation": [ 0, 0, 0.383, 0.924 ]
       },
       "rightUpperArm": {
-        "rotation" : [ -0.119, 0, 0, 0.993 ]
+        "rotation": [ 0, 0, -0.383, 0.924 ]
       }
     }
   },
