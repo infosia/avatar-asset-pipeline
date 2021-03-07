@@ -5,8 +5,8 @@
     {
       "name":"gltf_pipeline",
       "components":[
-        "glb_T_pose",
-        "glb_transforms_apply"
+        "glb_transforms_apply",
+        "glb_T_pose"
       ]
     }
   ]
