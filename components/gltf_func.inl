@@ -264,6 +264,38 @@ static glm::mat4 gltf_get_global_node_transform(const cgltf_node* node)
     return m;
 }
 
+// Check if given node is a joint
+static bool gltf_is_joint_node(const cgltf_node* node)
+{
+    // node that has mesh is not a joint
+    if (node->mesh != nullptr)
+        return false;
+
+    // node that has mesh child is not a joint
+    for (cgltf_size i = 0; i < node->children_count; i++) {
+        if (node->children[i]->mesh != nullptr) 
+            return false;
+    }
+
+    return true;
+}
+
+// Get global transform of joint, that does not include non-joint transform
+static glm::mat4 gltf_get_global_joint_transform(const cgltf_node* node)
+{
+    auto m = gltf_get_node_transform(node);
+    cgltf_node* parent = node->parent;
+    while (parent != nullptr) {
+        if (parent->mesh)
+            break;
+        if (!gltf_is_joint_node(parent))
+            break;
+        m = gltf_get_node_transform(parent) * m;
+        parent = parent->parent;
+    }
+    return m;
+}
+
 static void gltf_apply_transform_meshes(cgltf_data* data)
 {
     std::set<cgltf_accessor*> accessor_coord_done;
@@ -346,7 +378,7 @@ static void gltf_apply_transform(cgltf_node* node, const glm::mat4 parent_matrix
     }
 }
 
-static bool gltf_apply_weight(cgltf_node* skin_node, cgltf_float* positions, cgltf_uint* joints, cgltf_float* weights, cgltf_float* normals)
+static bool gltf_apply_weight(cgltf_node* skin_node, cgltf_float* positions, cgltf_uint* joints, cgltf_float* weights, cgltf_float* normals, bool joint_transform)
 {
     glm::mat4 skinMat = glm::mat4(0.f);
 
@@ -373,7 +405,7 @@ static bool gltf_apply_weight(cgltf_node* skin_node, cgltf_float* positions, cgl
         const auto joint = skin->joints[joint_index];
 
         glm::mat4 globalTransformOfJointNode = gltf_get_global_node_transform(joint);
-        glm::mat4 inverseBindMatrixForJoint = glm::make_mat4(ibm_mat);
+        glm::mat4 inverseBindMatrixForJoint = joint_transform ? glm::inverse(gltf_get_global_joint_transform(joint)) : glm::make_mat4(ibm_mat);
         glm::mat4 jointMatrix = globalTransformOfJointNode * inverseBindMatrixForJoint;
         jointMatrix = globalInverseTransform * jointMatrix;
 
@@ -399,7 +431,7 @@ static bool gltf_apply_weight(cgltf_node* skin_node, cgltf_float* positions, cgl
     return true;
 }
 
-static bool gltf_apply_weights(cgltf_node* skin_node, cgltf_accessor* positions, cgltf_accessor* joints, cgltf_accessor* weights, cgltf_accessor* normals)
+static bool gltf_apply_weights(cgltf_node* skin_node, cgltf_accessor* positions, cgltf_accessor* joints, cgltf_accessor* weights, cgltf_accessor* normals, bool joint_transform)
 {
     cgltf_uint* joints_data = (cgltf_uint*)calloc(joints->count * 4, sizeof(cgltf_uint));
     for (cgltf_size i = 0; i < joints->count; ++i) {
@@ -417,16 +449,27 @@ static bool gltf_apply_weights(cgltf_node* skin_node, cgltf_accessor* positions,
         normals_data = (uint8_t*)normals->buffer_view->buffer->data + normals->buffer_view->offset + normals->offset;
     }
 
+    positions->max[0] = -FLT_MAX;
+    positions->max[1] = -FLT_MAX;
+    positions->max[2] = -FLT_MAX;
+    positions->min[0] = FLT_MAX;
+    positions->min[1] = FLT_MAX;
+    positions->min[2] = FLT_MAX;
+
     for (cgltf_size i = 0; i < positions->count; ++i) {
         cgltf_float* position = (cgltf_float*)(positions_data + (positions->stride * i));
         cgltf_float* normal = normals_data != nullptr ? (cgltf_float*)(normals_data + (normals->stride * i)) : nullptr;
 
-        gltf_apply_weight(skin_node, position, joints_data + (i * 4), weights_data + (i * 4), normal);
+        gltf_apply_weight(skin_node, position, joints_data + (i * 4), weights_data + (i * 4), normal, joint_transform);
+
+        gltf_f3_max(position, positions->max, positions->max);
+        gltf_f3_min(position, positions->min, positions->min);
     }
+
     return true;
 }
 
-static bool gltf_skinning(cgltf_data* data)
+static bool gltf_skinning(cgltf_data* data, bool joint_transform)
 {
     for (cgltf_size i = 0; i < data->nodes_count; ++i) {
         const auto node = &data->nodes[i];
@@ -452,7 +495,7 @@ static bool gltf_skinning(cgltf_data* data)
                 }
             }
             if (acc_POSITION && acc_JOINTS && acc_WEIGHTS) {
-                gltf_apply_weights(node, acc_POSITION, acc_JOINTS, acc_WEIGHTS, acc_NORMAL);
+                gltf_apply_weights(node, acc_POSITION, acc_JOINTS, acc_WEIGHTS, acc_NORMAL, joint_transform);
             }
         }
     }
