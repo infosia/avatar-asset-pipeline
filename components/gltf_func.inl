@@ -369,7 +369,7 @@ static inline void gltf_from_mat4_to_floats(const glm::mat4& from, cgltf_float* 
     to[15] = from[3][3];
 }
 
-static bool gltf_apply_weight(cgltf_node* skin_node, cgltf_float* positions, cgltf_uint* joints, cgltf_float* weights, cgltf_float* normals, bool joint_transform)
+static bool gltf_apply_weight(cgltf_node* skin_node, cgltf_float* positions, cgltf_uint* joints, cgltf_float* weights, cgltf_float* normals)
 {
     glm::mat4 skinMat = glm::mat4(0.f);
 
@@ -396,7 +396,7 @@ static bool gltf_apply_weight(cgltf_node* skin_node, cgltf_float* positions, cgl
         const auto joint = skin->joints[joint_index];
 
         glm::mat4 globalTransformOfJointNode = gltf_get_global_node_transform(joint);
-        glm::mat4 inverseBindMatrixForJoint = joint_transform ? glm::inverse(gltf_get_global_node_transform(joint)) : glm::make_mat4(ibm_mat);
+        glm::mat4 inverseBindMatrixForJoint = glm::make_mat4(ibm_mat);
         glm::mat4 jointMatrix = globalTransformOfJointNode * inverseBindMatrixForJoint;
         jointMatrix = globalInverseTransform * jointMatrix;
 
@@ -422,7 +422,7 @@ static bool gltf_apply_weight(cgltf_node* skin_node, cgltf_float* positions, cgl
     return true;
 }
 
-static bool gltf_apply_weights(cgltf_node* skin_node, cgltf_accessor* positions, cgltf_accessor* joints, cgltf_accessor* weights, cgltf_accessor* normals, bool joint_transform)
+static bool gltf_apply_weights(cgltf_node* skin_node, cgltf_accessor* positions, cgltf_accessor* joints, cgltf_accessor* weights, cgltf_accessor* normals)
 {
     cgltf_uint* joints_data = (cgltf_uint*)calloc(joints->count * 4, sizeof(cgltf_uint));
     for (cgltf_size i = 0; i < joints->count; ++i) {
@@ -451,7 +451,7 @@ static bool gltf_apply_weights(cgltf_node* skin_node, cgltf_accessor* positions,
         cgltf_float* position = (cgltf_float*)(positions_data + (positions->stride * i));
         cgltf_float* normal = normals_data != nullptr ? (cgltf_float*)(normals_data + (normals->stride * i)) : nullptr;
 
-        gltf_apply_weight(skin_node, position, joints_data + (i * 4), weights_data + (i * 4), normal, joint_transform);
+        gltf_apply_weight(skin_node, position, joints_data + (i * 4), weights_data + (i * 4), normal);
 
         gltf_f3_max(position, positions->max, positions->max);
         gltf_f3_min(position, positions->min, positions->min);
@@ -460,7 +460,7 @@ static bool gltf_apply_weights(cgltf_node* skin_node, cgltf_accessor* positions,
     return true;
 }
 
-static bool gltf_skinning(cgltf_data* data, bool joint_transform)
+static bool gltf_skinning(cgltf_data* data)
 {
     for (cgltf_size i = 0; i < data->nodes_count; ++i) {
         const auto node = &data->nodes[i];
@@ -486,7 +486,7 @@ static bool gltf_skinning(cgltf_data* data, bool joint_transform)
                 }
             }
             if (acc_POSITION && acc_JOINTS && acc_WEIGHTS) {
-                gltf_apply_weights(node, acc_POSITION, acc_JOINTS, acc_WEIGHTS, acc_NORMAL, joint_transform);
+                gltf_apply_weights(node, acc_POSITION, acc_JOINTS, acc_WEIGHTS, acc_NORMAL);
             }
         }
     }
