@@ -264,38 +264,6 @@ static glm::mat4 gltf_get_global_node_transform(const cgltf_node* node)
     return m;
 }
 
-// Check if given node is a joint
-static bool gltf_is_joint_node(const cgltf_node* node)
-{
-    // node that has mesh is not a joint
-    if (node->mesh != nullptr)
-        return false;
-
-    // node that has mesh child is not a joint
-    for (cgltf_size i = 0; i < node->children_count; i++) {
-        if (node->children[i]->mesh != nullptr)
-            return false;
-    }
-
-    return true;
-}
-
-// Get global transform of joint, that does not include non-joint transform
-static glm::mat4 gltf_get_global_joint_transform(const cgltf_node* node)
-{
-    auto m = gltf_get_node_transform(node);
-    cgltf_node* parent = node->parent;
-    while (parent != nullptr) {
-        if (parent->mesh)
-            break;
-        if (!gltf_is_joint_node(parent))
-            break;
-        m = gltf_get_node_transform(parent) * m;
-        parent = parent->parent;
-    }
-    return m;
-}
-
 static void gltf_apply_transform_meshes(cgltf_data* data)
 {
     std::set<cgltf_accessor*> accessor_coord_done;
@@ -428,7 +396,7 @@ static bool gltf_apply_weight(cgltf_node* skin_node, cgltf_float* positions, cgl
         const auto joint = skin->joints[joint_index];
 
         glm::mat4 globalTransformOfJointNode = gltf_get_global_node_transform(joint);
-        glm::mat4 inverseBindMatrixForJoint = joint_transform ? glm::inverse(gltf_get_global_joint_transform(joint)) : glm::make_mat4(ibm_mat);
+        glm::mat4 inverseBindMatrixForJoint = joint_transform ? glm::inverse(gltf_get_global_node_transform(joint)) : glm::make_mat4(ibm_mat);
         glm::mat4 jointMatrix = globalTransformOfJointNode * inverseBindMatrixForJoint;
         jointMatrix = globalInverseTransform * jointMatrix;
 

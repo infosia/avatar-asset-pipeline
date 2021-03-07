@@ -47,7 +47,7 @@ static bool gltf_apply_pose(std::string name, AvatarBuild::bone_mappings* mappin
                 glm::quat b = glm::make_quat(bone.rotation);
 
                 // apply given rotation to the bone
-                glm::quat r = a * b;
+                glm::quat r = glm::normalize(a * b);
 
                 node->rotation[0] = r.x;
                 node->rotation[1] = r.y;
