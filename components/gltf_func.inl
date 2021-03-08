@@ -49,13 +49,21 @@ static void gltf_f3_max(cgltf_float* a, cgltf_float* b, cgltf_float* out)
 
 static bool gltf_update_joint_buffer(cgltf_accessor* joints)
 {
-    const cgltf_size new_buffer_view_size = joints->count * 4 * sizeof(cgltf_uint);
-    cgltf_uint* joints_data = (cgltf_uint*)calloc(joints->count * 4, sizeof(cgltf_uint));
+    const cgltf_size new_buffer_view_size = joints->count * 4 * sizeof(std::uint16_t);
+    std::uint16_t* joints_data = (std::uint16_t*)calloc(joints->count * 4, sizeof(std::uint16_t));
     for (cgltf_size i = 0; i < joints->count; ++i) {
-        cgltf_accessor_read_uint(joints, i, joints_data + (i * 4), 4);
+        cgltf_uint out[4];
+        if (!cgltf_accessor_read_uint(joints, i, out, 4))
+            return false;
+        auto data = (joints_data + (i * 4));
+        data[0] = static_cast<std::uint16_t>(out[0]);
+        data[1] = static_cast<std::uint16_t>(out[1]);
+        data[2] = static_cast<std::uint16_t>(out[2]);
+        data[3] = static_cast<std::uint16_t>(out[3]);
     }
     joints->buffer_view->size = new_buffer_view_size;
-    joints->buffer_view->data = joints_data; // will be freed at cgltf_free
+    joints->buffer_view->data = joints_data;
+    joints->component_type = cgltf_component_type_r_16u;
 
     return true;
 }
@@ -91,10 +99,10 @@ static bool gltf_upcast_joints(cgltf_data* data)
 
     cgltf_size total_size = 0;
     for (cgltf_size j = 0; j < data->buffer_views_count; ++j) {
-        total_size += data->buffer_views[j].size;
+        total_size += (data->buffer_views[j].size + 3) & ~3;
     }
 
-    auto buffer_data = (uint8_t*)calloc(total_size, sizeof(uint8_t));
+    auto buffer_data = (uint8_t*)calloc(total_size, sizeof(uint8_t)); // TODO: free() after cgltf_free
     auto buffer_dst = buffer_data;
     for (cgltf_size j = 0; j < data->buffer_views_count; ++j) {
         const auto buffer_view = &data->buffer_views[j];
@@ -105,10 +113,12 @@ static bool gltf_upcast_joints(cgltf_data* data)
             memcpy_s(buffer_dst, size_to_copy, ((uint8_t*)buffer_view->buffer->data + buffer_view->offset), size_to_copy);
         }
         buffer_view->offset = (buffer_dst - buffer_data);
-        buffer_dst += size_to_copy;
+        buffer_dst += (size_to_copy + 3) & ~3;
 
-        free(buffer_view->data);
-        buffer_view->data = nullptr;
+        if (buffer_view->data != nullptr) {
+            free(buffer_view->data);
+            buffer_view->data = nullptr;
+        }
     }
 
     buffer->size = total_size;
@@ -302,7 +312,7 @@ static bool gltf_write_file(cgltf_data* data, std::string output)
         fout.write(reinterpret_cast<const char*>(&GlbMagicBinChunk), 4);
         fout.write(reinterpret_cast<const char*>(buffer->data), buffer->size);
 
-        const int zero = 0;
+        const std::int8_t zero = 0;
         for (uint32_t j = 0; j < align; ++j) {
             fout.write(reinterpret_cast<const char*>(&zero), 1);
         }
