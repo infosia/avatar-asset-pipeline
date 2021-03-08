@@ -47,6 +47,76 @@ static void gltf_f3_max(cgltf_float* a, cgltf_float* b, cgltf_float* out)
     out[2] = a[2] > b[2] ? a[2] : b[2];
 }
 
+static bool gltf_update_joint_buffer(cgltf_accessor* joints)
+{
+    const cgltf_size new_buffer_view_size = joints->count * 4 * sizeof(cgltf_uint);
+    cgltf_uint* joints_data = (cgltf_uint*)calloc(joints->count * 4, sizeof(cgltf_uint));
+    for (cgltf_size i = 0; i < joints->count; ++i) {
+        cgltf_accessor_read_uint(joints, i, joints_data + (i * 4), 4);
+    }
+    joints->buffer_view->size = new_buffer_view_size;
+    joints->buffer_view->data = joints_data; // will be freed at cgltf_free
+
+    return true;
+}
+
+static bool gltf_upcast_joints(cgltf_data* data)
+{
+    std::set<cgltf_accessor*> accessor_coord_done;
+    for (cgltf_size i = 0; i < data->nodes_count; ++i) {
+        const auto node = &data->nodes[i];
+        if (node->mesh == nullptr)
+            continue;
+
+        const auto mesh = node->mesh;
+
+        for (cgltf_size j = 0; j < mesh->primitives_count; ++j) {
+            const auto primitive = &mesh->primitives[j];
+
+            for (cgltf_size k = 0; k < primitive->attributes_count; ++k) {
+                const auto attr = &primitive->attributes[k];
+                const auto accessor = attr->data;
+                if (accessor_coord_done.count(accessor) > 0) {
+                    continue;
+                }
+                if (attr->name && strcmp(attr->name, "JOINTS_0") == 0) {
+                    gltf_update_joint_buffer(accessor);
+                }
+                accessor_coord_done.emplace(accessor);
+            }
+        }
+    }
+
+    const auto buffer = &data->buffers[0];
+
+    cgltf_size total_size = 0;
+    for (cgltf_size j = 0; j < data->buffer_views_count; ++j) {
+        total_size += data->buffer_views[j].size;
+    }
+
+    auto buffer_data = (uint8_t*)calloc(total_size, sizeof(uint8_t));
+    auto buffer_dst = buffer_data;
+    for (cgltf_size j = 0; j < data->buffer_views_count; ++j) {
+        const auto buffer_view = &data->buffer_views[j];
+        const auto size_to_copy = buffer_view->size;
+        if (buffer_view->data != nullptr) {
+            memcpy_s(buffer_dst, size_to_copy, buffer_view->data, size_to_copy);
+        } else {
+            memcpy_s(buffer_dst, size_to_copy, ((uint8_t*)buffer_view->buffer->data + buffer_view->offset), size_to_copy);
+        }
+        buffer_view->offset = (buffer_dst - buffer_data);
+        buffer_dst += size_to_copy;
+
+        free(buffer_view->data);
+        buffer_view->data = nullptr;
+    }
+
+    buffer->size = total_size;
+    buffer->data = buffer_data;
+
+    return true;
+}
+
 static void gltf_reverse_z_accessor(cgltf_accessor* accessor)
 {
     uint8_t* buffer_data = (uint8_t*)accessor->buffer_view->buffer->data + accessor->buffer_view->offset + accessor->offset;
@@ -232,8 +302,9 @@ static bool gltf_write_file(cgltf_data* data, std::string output)
         fout.write(reinterpret_cast<const char*>(&GlbMagicBinChunk), 4);
         fout.write(reinterpret_cast<const char*>(buffer->data), buffer->size);
 
+        const int zero = 0;
         for (uint32_t j = 0; j < align; ++j) {
-            fout.write(0, 1);
+            fout.write(reinterpret_cast<const char*>(&zero), 1);
         }
     }
 
@@ -456,6 +527,9 @@ static bool gltf_apply_weights(cgltf_node* skin_node, cgltf_accessor* positions,
         gltf_f3_max(position, positions->max, positions->max);
         gltf_f3_min(position, positions->min, positions->min);
     }
+
+    free(joints_data);
+    free(weights_data);
 
     return true;
 }

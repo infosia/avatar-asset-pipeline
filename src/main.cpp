@@ -43,9 +43,10 @@
 #include "glb_T_pose.hpp"
 #include "glb_transforms_apply.hpp"
 #include "glb_z_reverse.hpp"
+#include "vrm0_fix_joint_buffer.hpp"
+#include "vrm0_default_extensions.hpp"
 #include "gltf_pipeline.hpp"
 #include "noop.hpp"
-#include "vrm0_default_extensions.hpp"
 
 #include "fbx2gltf_execute.hpp"
 #include "fbx_pipeline.hpp"
@@ -62,6 +63,8 @@ static std::shared_ptr<DSPatch::Component> create_component(std::string name, cm
         return std::make_shared<DSPatch::glb_transforms_apply>(options);
     } else if (name == "glb_T_pose") {
         return std::make_shared<DSPatch::glb_T_pose>(options);
+    } else if (name == "vrm0_fix_joint_buffer") {
+        return std::make_shared<DSPatch::vrm0_fix_joint_buffer>(options);
     } else if (name == "vrm0_default_extensions") {
         return std::make_shared<DSPatch::vrm0_default_extensions>(options);
     } else if (name == "fbx2gltf_execute") {
