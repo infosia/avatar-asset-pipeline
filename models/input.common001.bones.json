@@ -1,7 +1,17 @@
 {
   "config":{
-    "regex_match": true,
+    "pattern_match": true,
     "with_any_case": true
+  },
+  "poses":{
+    "T": {
+      "leftUpperArm":  {
+        "rotation": [ 0, 0, 0.383, 0.924 ]
+      },
+      "rightUpperArm": {
+        "rotation": [ 0, 0, -0.383, 0.924 ]
+      }
+    }
   },
   "bones":{
     "hips":"Hips",

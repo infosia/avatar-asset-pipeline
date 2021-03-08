@@ -63,6 +63,32 @@ static bool gltf_apply_pose(std::string name, AvatarBuild::bone_mappings* mappin
     return node_count > 0;
 }
 
+static bool gltf_bone_symmetry_naming_test(const std::string& name_to_test, const std::string bone_key, const std::string& bone_name, const bool with_any_case)
+{
+    static auto right_test = verex::verex().search_one_line().start_of_line().then("right").anything();
+    static auto left_test  = verex::verex().search_one_line().start_of_line().then("left").anything();
+
+    auto re_r1 = verex::verex().search_one_line().anything().then("right").anything().then(bone_name).with_any_case(with_any_case);
+    auto re_l1  = verex::verex().search_one_line().anything().then("left").anything().then(bone_name).with_any_case(with_any_case);
+    auto re_r2 = verex::verex().search_one_line().anything().then(bone_name).anything().then("right").with_any_case(with_any_case);
+    auto re_l2 = verex::verex().search_one_line().anything().then(bone_name).anything().then("left").with_any_case(with_any_case);
+
+    auto re_r3 = verex::verex().search_one_line().anything().any_of("r_|r\\.|r\\s+").then(bone_name).with_any_case(with_any_case);
+    auto re_l3 = verex::verex().search_one_line().anything().any_of("l_|l\\.|l\\s+").then(bone_name).with_any_case(with_any_case);
+    auto re_r4 = verex::verex().search_one_line().anything().then(bone_name).any_of("_r|\\.r|\\s+r").with_any_case(with_any_case);
+    auto re_l4 = verex::verex().search_one_line().anything().then(bone_name).any_of("_l|\\.l|\\s+l").with_any_case(with_any_case);
+
+    if (right_test.test(bone_key)) {
+        return re_r1.test(name_to_test) || re_r2.test(name_to_test) || re_r3.test(name_to_test) || re_r4.test(name_to_test);
+    }
+
+    if (left_test.test(bone_key)) {
+        return re_l1.test(name_to_test) || re_l2.test(name_to_test) || re_l3.test(name_to_test) || re_l4.test(name_to_test);
+    }
+
+    return false;
+}
+
 static std::unordered_map<std::string, cgltf_node*> gltf_parse_bones_to_node(json input, cgltf_data* data)
 {
     std::unordered_map<std::string, cgltf_node*> name_to_node;
@@ -86,35 +112,29 @@ static std::unordered_map<std::string, cgltf_node*> gltf_parse_bones_to_node(jso
 
     auto bones_object = input["bones"].items();
     for (auto bone_object : bones_object) {
-        const auto key = bone_object.key();
+        const auto bone_key = bone_object.key();
         const auto bone_name = bone_object.value().get<std::string>();
 
-        bool found = false;
-        std::string actual_name;
-        if (pattern_match) {
-            auto expr = verex::verex().search_one_line().anything().find(bone_name).anything().with_any_case(with_any_case);
+        const auto found_iter = nodes.find(bone_name);
+
+        if (found_iter != nodes.end()) {
+            name_to_node.emplace(bone_key, nodes[bone_name]);
+            nodes.erase(bone_name);
+        } else if (pattern_match) {
+            std::string name_to_erase;
+            auto expr = verex::verex().search_one_line().anything().then(bone_name).with_any_case(with_any_case);
             for (const auto node : nodes) {
                 const auto node_name = node.first;
                 if (bone_name == node_name || expr.test(node_name)) {
-                    name_to_node.emplace(key, node.second);
-                    actual_name = node_name;
-                    found = true;
-                    break;
+                    if (gltf_bone_symmetry_naming_test(node_name, bone_key, bone_name, with_any_case)) {
+                        name_to_node.emplace(bone_key, node.second);
+                        name_to_erase = node_name;
+                        break;
+                    }
                 }
             }
-        } else {
-            for (const auto node : nodes) {
-                const auto node_name = node.first;
-                if (bone_name == node_name) {
-                    name_to_node.emplace(key, node.second);
-                    actual_name = node_name;
-                    found = true;
-                    break;
-                }
-            }
-        }
-        if (found && !actual_name.empty()) {
-            nodes.erase(actual_name);
+            if (!name_to_erase.empty())
+                nodes.erase(name_to_erase);
         }
     }
     return name_to_node;
