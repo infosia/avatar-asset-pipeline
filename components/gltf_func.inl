@@ -59,6 +59,17 @@ static void gltf_f3_max(cgltf_float* a, cgltf_float* b, cgltf_float* out)
     out[2] = a[2] > b[2] ? a[2] : b[2];
 }
 
+static bool gltf_remove_animation(cgltf_data* data)
+{
+    if (data->animations_count > 0) {
+        data->memory.free(data->memory.user_data, data->animations);
+        data->animations_count = 0;
+        data->animations = nullptr;
+        return true;
+    }
+    return false;
+}
+
 static bool gltf_update_joint_buffer(cgltf_accessor* joints)
 {
     const cgltf_size new_buffer_view_size = joints->count * 4 * sizeof(std::uint16_t);

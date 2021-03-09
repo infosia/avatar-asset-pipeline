@@ -49,12 +49,8 @@ static void vrm0_ensure_defaults(cgltf_data* data)
     vrm->exporterVersion = gltf_alloc_chars("cgltf+vrm 1.9");
     vrm->specVersion = gltf_alloc_chars("0.0");
 
-    // VRM does not use animation
-    if (data->animations_count > 0) {
-        data->memory.free(data->memory.user_data, data->animations);
-        data->animations_count = 0;
-        data->animations = nullptr;
-    }
+    // VRM does not support animation
+    gltf_remove_animation(data);
 
     vrm0_ensure_degreemap(&vrm->firstPerson.lookAtHorizontalInner);
     vrm0_ensure_degreemap(&vrm->firstPerson.lookAtHorizontalOuter);

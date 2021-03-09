@@ -63,6 +63,7 @@ protected:
             AvatarBuild::bone_mappings* mappings = *bones_ptr;
             gltf_apply_transforms(data, mappings->name_to_node);
             gltf_update_inverse_bind_matrices(data);
+            gltf_remove_animation(data); // pose change does not work well with animation
             outputs.SetValue(0, false);    // discarded
             outputs.SetValue(1, data);
             outputs.SetValue(2, *bones_ptr);

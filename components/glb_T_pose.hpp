@@ -64,6 +64,7 @@ protected:
             if (gltf_apply_pose("T", mappings)) {
                 gltf_skinning(data);
                 gltf_update_inverse_bind_matrices(data);
+                gltf_remove_animation(data); // pose change does not work well with animation
             }
             outputs.SetValue(0, false); // discarded
             outputs.SetValue(1, data);  // data
