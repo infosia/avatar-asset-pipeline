@@ -33,6 +33,18 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
+static char* gltf_alloc_chars(const char* str)
+{
+    const auto length = strlen(str);
+    if (length == 0)
+        return (char*)calloc(1, 1);
+
+    auto dst = (char*)calloc(length + 1, 1);
+    if (dst > 0)
+        strncpy(dst, str, length);
+
+    return dst;
+}
 static void gltf_f3_min(cgltf_float* a, cgltf_float* b, cgltf_float* out)
 {
     out[0] = a[0] < b[0] ? a[0] : b[0];

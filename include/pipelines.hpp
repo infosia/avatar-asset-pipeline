@@ -28,8 +28,6 @@
 #include <vector>
 #include <unordered_map>
 
-#include "json.hpp"
-
 #define AVATAR_PIPELINE_LOG(msg)  if (options->verbose) std::cout << msg << std::endl;
 #define AVATAR_COMPONENT_LOG(msg) if (options->verbose) std::cout << msg << std::endl;
 
@@ -40,6 +38,7 @@ struct cmd_options {
     std::string input;
     std::string output;
     std::string bone_config;
+    std::string vrm0_config;
     std::string fbx2gltf;
     bool verbose;
 };
@@ -61,7 +60,8 @@ struct pose {
 
 struct bone_mappings {
     std::unordered_map<std::string, pose> poses;
-    std::unordered_map<std::string, cgltf_node*> name_to_node;
+    std::unordered_map<std::string, cgltf_node*> name_to_node;  // bone name, node
+    std::unordered_map<std::string, cgltf_int> node_index_map; // node->name, node index
 };
 
 // A component that just get result from signal bus

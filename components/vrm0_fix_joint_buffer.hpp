@@ -54,7 +54,9 @@ protected:
         AVATAR_COMPONENT_LOG("[INFO] vrm0_fix_joint_buffer");
 
         const auto data_ptr = inputs.GetValue<cgltf_data*>(1);
-        if (data_ptr) {
+        const auto bones_ptr = inputs.GetValue<AvatarBuild::bone_mappings*>(2);
+
+        if (data_ptr && bones_ptr) {
             cgltf_data* data = *data_ptr;
 
             if (!gltf_upcast_joints(data)) {
@@ -65,8 +67,9 @@ protected:
 
             outputs.SetValue(0, false);    // discarded
             outputs.SetValue(1, data);
+            outputs.SetValue(2, *bones_ptr);
         } else {
-            AVATAR_COMPONENT_LOG("[ERROR] vrm0_fix_joint_buffer: input.1 not found");
+            AVATAR_COMPONENT_LOG("[ERROR] vrm0_fix_joint_buffer: inputs not found");
             outputs.SetValue(0, true);    // discarded
         }
     }

@@ -89,7 +89,7 @@ static bool gltf_bone_symmetry_naming_test(const std::string& name_to_test, cons
     return false;
 }
 
-static std::unordered_map<std::string, cgltf_node*> gltf_parse_bones_to_node(json input, cgltf_data* data)
+static void gltf_parse_bones_to_node(json input, cgltf_data* data, AvatarBuild::bone_mappings* mappings)
 {
     std::unordered_map<std::string, cgltf_node*> name_to_node;
 
@@ -107,6 +107,7 @@ static std::unordered_map<std::string, cgltf_node*> gltf_parse_bones_to_node(jso
         const auto node = &data->nodes[i];
         if (node->name != nullptr) {
             nodes.emplace(node->name, node);
+            mappings->node_index_map.emplace(node->name, (cgltf_int)i);
         }
     }
 
@@ -137,7 +138,7 @@ static std::unordered_map<std::string, cgltf_node*> gltf_parse_bones_to_node(jso
                 nodes.erase(name_to_erase);
         }
     }
-    return name_to_node;
+    mappings->name_to_node = name_to_node;
 }
 
 static std::unordered_map<std::string, AvatarBuild::pose> gltf_parse_bone_poses(json poses_obj)
@@ -186,7 +187,7 @@ static bool gltf_parse_bone_mappings(cgltf_data* data, AvatarBuild::bone_mapping
 
     try {
         mappings->poses = gltf_parse_bone_poses(j["poses"]);
-        mappings->name_to_node = gltf_parse_bones_to_node(j, data);
+        gltf_parse_bones_to_node(j, data, mappings);
     } catch (json::exception&) {
         return false;
     }

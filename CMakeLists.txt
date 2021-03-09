@@ -11,6 +11,7 @@ set(SRC_FILES
   components/json_func.inl
   components/gltf_func.inl
   components/gltf_bone_mappings.inl
+  components/vrm0_func.inl
   ${pipeline_FILES}
 )
 

@@ -39,6 +39,7 @@
 #include "gltf_func.inl"
 #include "json_func.inl"
 #include "gltf_bone_mappings.inl"
+#include "vrm0_func.inl"
 
 #include "glb_T_pose.hpp"
 #include "glb_transforms_apply.hpp"
@@ -173,6 +174,9 @@ int main(int argc, char** argv)
     std::string bone_config;
     app.add_option("-b,--bone", bone_config, "Bone configuration file name (JSON)");
 
+    std::string vrm0_config = "models/input.vrm0_config.json";
+    app.add_option("-m,--vrm0", vrm0_config, "VRM 0.0 configuration file name (JSON)");
+
     std::string fbx2gltf = "extern/fbx2gltf.exe";
     app.add_option("-x,--fbx2gltf", fbx2gltf, "Path to fbx2gltf executable")->check(CLI::ExistingFile);
 
@@ -184,7 +188,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    cmd_options options = { config, input, output, bone_config, fbx2gltf, verbose };
+    cmd_options options = { config, input, output, bone_config, vrm0_config, fbx2gltf, verbose };
 
     if (!start_pipelines(&options)) {
         return 1;

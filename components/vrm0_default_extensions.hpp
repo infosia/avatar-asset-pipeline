@@ -51,15 +51,35 @@ protected:
             Reset();
             return;
         }
+
+        if (options->vrm0_config.empty()) {
+            AVATAR_COMPONENT_LOG("[ERROR] VRM config file is not specified. Use --vrm0 [file] option to specify VRM config");
+            outputs.SetValue(0, true);    // discarded
+            Reset();
+            return;
+        }
+
         AVATAR_COMPONENT_LOG("[INFO] vrm0_default_extensions");
 
         const auto data_ptr = inputs.GetValue<cgltf_data*>(1);
-        if (data_ptr) {
+        const auto bones_ptr = inputs.GetValue<AvatarBuild::bone_mappings*>(2);
+
+        if (data_ptr && bones_ptr) {
             cgltf_data* data = *data_ptr;
+            AvatarBuild::bone_mappings* mappings = *bones_ptr;
+
+            json vrm0_config;
+            json_parse(options->vrm0_config, &vrm0_config);
+
+            vrm0_update_bones(mappings, data);
+            vrm0_update_meta(vrm0_config["meta"], &data->vrm_v0_0);
+            vrm0_ensure_defaults(data);
+
             outputs.SetValue(0, false);    // discarded
             outputs.SetValue(1, data);
+            outputs.SetValue(2, *bones_ptr);
         } else {
-            AVATAR_COMPONENT_LOG("[ERROR] vrm0_default_extensions: input.1 not found");
+            AVATAR_COMPONENT_LOG("[ERROR] vrm0_default_extensions: inputs not found");
             outputs.SetValue(0, true);    // discarded
         }
     }
