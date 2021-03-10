@@ -125,7 +125,7 @@ static bool gltf_upcast_joints(cgltf_data* data)
         total_size += (data->buffer_views[j].size + 3) & ~3;
     }
 
-    auto buffer_data = (uint8_t*)calloc(total_size, sizeof(uint8_t)); // TODO: free() after cgltf_free
+    auto buffer_data = (uint8_t*)calloc(total_size, sizeof(uint8_t)); // will be freed at cgltf_free()
     auto buffer_dst = buffer_data;
     for (cgltf_size j = 0; j < data->buffer_views_count; ++j) {
         const auto buffer_view = &data->buffer_views[j];
