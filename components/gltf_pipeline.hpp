@@ -147,6 +147,10 @@ protected:
             }
         }
 
+        if (options->debug) {
+            gltf_write_json(data, options->output + ".json");
+        }
+
         cgltf_free(data);
         glb_loader->set_data(nullptr);
         data = nullptr;

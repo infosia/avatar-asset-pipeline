@@ -41,6 +41,7 @@ struct cmd_options {
     std::string vrm0_config;
     std::string fbx2gltf;
     bool verbose;
+    bool debug;
 };
 
 struct pipeline {

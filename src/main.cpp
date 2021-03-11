@@ -165,6 +165,9 @@ int main(int argc, char** argv)
     bool verbose = false;
     app.add_flag("-v,--verbose", verbose, "Verbose log output");
 
+    bool debug = false;
+    app.add_flag("-d,--debug", debug, "Enable debug output");
+
     std::string input = "input.glb";
     app.add_option("-i,--input", input, "Input file name")->check(CLI::ExistingFile);
 
@@ -188,7 +191,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    cmd_options options = { config, input, output, bone_config, vrm0_config, fbx2gltf, verbose };
+    cmd_options options = { config, input, output, bone_config, vrm0_config, fbx2gltf, verbose, debug };
 
     if (!start_pipelines(&options)) {
         return 1;

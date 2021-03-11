@@ -346,6 +346,12 @@ static bool gltf_write_file(cgltf_data* data, std::string output)
     return true;
 }
 
+static bool gltf_write_json(cgltf_data* data, std::string output)
+{
+    cgltf_options options = {};
+    return cgltf_write_file(&options, output.c_str(), data) == cgltf_result_success;
+}
+
 static glm::mat4 gltf_get_node_transform(const cgltf_node* node)
 {
     auto matrix = glm::mat4(1.0f);
