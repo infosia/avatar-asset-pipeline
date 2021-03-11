@@ -6,12 +6,13 @@ Avatar asset pipeline is a tool to create continuous integration build pipelines
 
 ## Background
 
-![The Tower of Babel](docs/The_Tower_of_Babel.jpg)
+![The Tower of Babel](docs/The_Tower_of_Babel.jpg)  
+
 <sub>[The Tower of Babel (Vienna) By Pieter Brueghel the Elder - Google Cultural Institute](https://commons.wikimedia.org/w/index.php?curid=22178101)</sub>
 
 > According to the story, a united human race in the generations following the Great Flood, speaking a single language and migrating eastward, comes to the land of Shinar. There they agree to build a city and a tower tall enough to reach heaven. God, observing their city and tower, confounds their speech so that they can no longer understand each other, and scatters them around the world. 
 
-Avatar asset pipeline is aiming to help common workflows for both 3D artist and avatar asset user. Avatar pipeline does following for you:
+Avatar asset pipeline is aiming to help common workflows for both 3D artist and avatar asset user. Avatar pipeline helps you to:
 
 * Create multiple LOD (Level of Details) assets in order to support multiple platforms such as standalone VR headset device like Oculus Quest, while preserving your original asset clean
 * Create T-pose asset from A-pose asset so 3D artist don't have to do it manually every time asset is updated
@@ -25,13 +26,13 @@ Avatar asset pipeline is aiming to help common workflows for both 3D artist and 
 
 ```json
 {
-  "name":"readyplayerme_Tpose",
-  "description":"T-pose ReadyPlayerMe avatar",
+  "name":"glb_T_pose",
+  "description":"T-pose from A-pose glTF binary (.glb) and make bones mo-cap ready",
   "pipelines":[
     {
-      "name":"readyplayerme_pipeline",
+      "name":"gltf_pipeline",
       "components":[
-        "apose2tpose",
+        "glb_T_pose",
         "glb_transforms_apply"
       ]
     }
@@ -46,18 +47,17 @@ Avatar asset pipeline is aiming to help common workflows for both 3D artist and 
 
 ```json
 {
-  "name":"glb2vrm0",
-  "description":"Convert glTF binary (.glb) to VRM spec 0.0",
+  "name":"glb2vrm0_T_pose",
+  "description":"Convert A-pose to T-pose, glTF binary (.glb) to VRM spec 0.0",
   "pipelines":[
     {
       "name":"gltf_pipeline",
       "components":[
+        "glb_T_pose",
         "glb_transforms_apply",
         "glb_z_reverse",
         "vrm0_fix_joint_buffer",
-        "vrm0_set_materials",
-        "vrm0_set_humanoid",
-        "vrm0_set_default_properties"
+        "vrm0_default_extensions"
       ]
     }
   ]
@@ -70,20 +70,20 @@ Avatar asset pipeline is aiming to help common workflows for both 3D artist and 
 
 ```js
 {
-  "name":"fbx2vrm0",
-  "description":"Convert FBX to VRM",
+  "name":"fbx2glb_tpose",
+  "description":"Convert FBX to glTF binary (.glb) and make it T-pose",
   "pipelines":[
     {
-      "name":"fbx2glb",
-      ...
-    },
+      "name":"fbx_pipeline",
+      "components":[
+        "fbx2gltf_execute"
+      ]
+    }, 
     {
-      "name":"apose2tpose",
-      ...
-    },
-    {
-      "name":"glb2vrm0",
-      ...
+      "name":"gltf_pipeline",
+      "components":[
+        "glb_T_pose"
+      ]
     }
   ]
 }
@@ -147,8 +147,20 @@ Still, you can explicitly specify bone naming conversions by using `--bone` opti
 Check out `pipelines` directory for working pipeline examples in practice.
 
 ```
-> avatar-build -i models/input.glb -o models/output.glb --config pipelines/glb2vrm0.json --verbose 
+> avatar-build --config pipelines/glb2vrm0_T_pose.json --debug --vrm0 models/input.vrm0_config.json -v --fbx2gltf extern/fbx2gltf.exe --bone models/input.readyplayerme.bones.json -i models/readyplayerme-feminine.glb -o models/readyplayerme-feminine.vrm
 ```
+
+## Options
+
+* `--config`: Pipeline configuration file name (JSON);
+* `--verbose`: verbose Verbose log output
+* `--debug`: Enable debug output (such as JSON dump)
+* `--input`: Input file name
+* `--output` "Output file name
+* `--bone`: Bone configuration file name (JSON)
+* `--vrm0`: VRM 0.0 configuration file name (JSON)
+* `--fbx2gltf`: Path to fbx2gltf executable
+
 
 ## License
 
