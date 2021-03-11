@@ -29,7 +29,7 @@ using json = nlohmann::json;
 static bool json_get_bool(json object, std::string name)
 {
     if (object.is_object()) {
-        auto value = object[name];
+        auto& value = object[name];
         if (value.is_boolean()) {
             return value.get<bool>();
         }
@@ -39,7 +39,7 @@ static bool json_get_bool(json object, std::string name)
 
 static std::vector<std::string> json_get_string_items(std::string name, json obj)
 {
-    const auto items_obj = obj[name];
+    const auto& items_obj = obj[name];
     std::vector<std::string> items;
     if (items_obj.is_array()) {
         for (const auto& item : items_obj) {

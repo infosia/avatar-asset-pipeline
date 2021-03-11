@@ -73,7 +73,7 @@ protected:
 
             vrm0_update_bones(mappings, data);
             vrm0_update_meta(vrm0_config["meta"], &data->vrm_v0_0);
-            vrm0_ensure_defaults(data);
+            vrm0_ensure_defaults(vrm0_config["materialProperties"], data);
 
             outputs.SetValue(0, false);    // discarded
             outputs.SetValue(1, data);

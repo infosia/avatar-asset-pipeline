@@ -100,7 +100,7 @@ static std::shared_ptr<DSPatch::Component> wire_pipeline(pipeline* p, cmd_option
 static bool build_and_start_circuits(cmd_options* options, json config_json)
 {
     try {
-        const auto pipelines_obj = config_json["pipelines"];
+        const auto& pipelines_obj = config_json["pipelines"];
         if (!pipelines_obj.is_array()) {
             std::cout << "[ERROR] pipeline '" << config_json["name"] << "' is not an array" << std::endl;
             return false;
