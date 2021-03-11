@@ -45,6 +45,19 @@ static char* gltf_alloc_chars(const char* str)
 
     return dst;
 }
+
+static std::string gltf_str_tolower(std::string s)
+{
+    std::transform(s.begin(), s.end(), s.begin(),
+        [](unsigned char c) { return (unsigned char)std::tolower(c); });
+    return s;
+}
+
+static char* gltf_alloc_lower_chars(std::string s)
+{
+    return gltf_alloc_chars(gltf_str_tolower(s).c_str());
+}
+
 static void gltf_f3_min(cgltf_float* a, cgltf_float* b, cgltf_float* out)
 {
     out[0] = a[0] < b[0] ? a[0] : b[0];

@@ -41,6 +41,113 @@ static bool vrm0_ensure_degreemap(cgltf_vrm_firstperson_degreemap_v0_0* degreema
     return true;
 }
 
+static void vrm0_store_blendshapes(const std::string name, cgltf_size mesh, cgltf_size index, std::unordered_map<std::string, std::vector<cgltf_vrm_blendshape_bind_v0_0>>& blendshapes)
+{
+    cgltf_vrm_blendshape_bind_v0_0 item = { (cgltf_int)mesh, (cgltf_int)index, 100.f };
+    auto iter = blendshapes.find(name);
+    if (iter != blendshapes.end()) {
+        iter->second.push_back(item);
+    } else {
+        std::vector<cgltf_vrm_blendshape_bind_v0_0> items = { item };
+        blendshapes.emplace(name, items);
+    }
+}
+
+static void vrm0_ensure_textureProperties(const json& materialProperties_object, cgltf_size i, cgltf_data* data)
+{
+    const auto vrm = &data->vrm_v0_0;
+    const auto textureProperties = materialProperties_object["default"]["textureProperties"];
+
+    vrm->materialProperties[i].textureProperties_count = textureProperties.size() + 2;
+    vrm->materialProperties[i].textureProperties_keys = (char**)calloc(vrm->materialProperties[i].textureProperties_count, sizeof(void*));
+    vrm->materialProperties[i].textureProperties_values = (cgltf_int*)calloc(vrm->materialProperties[i].textureProperties_count, sizeof(cgltf_int));
+    vrm->materialProperties[i].textureProperties_keys[0] = gltf_alloc_chars("_MainTex");
+    vrm->materialProperties[i].textureProperties_keys[1] = gltf_alloc_chars("_ShadeTexture");
+    vrm->materialProperties[i].textureProperties_values[0] = (cgltf_int)(data->materials[i].pbr_metallic_roughness.base_color_texture.texture - data->textures);
+    vrm->materialProperties[i].textureProperties_values[1] = (cgltf_int)(data->materials[i].pbr_metallic_roughness.base_color_texture.texture - data->textures);
+    cgltf_size j = 2;
+    for (const auto item : textureProperties.items()) {
+        vrm->materialProperties[i].textureProperties_keys[j] = gltf_alloc_chars(item.key().c_str());
+        vrm->materialProperties[i].textureProperties_values[j] = item.value().get<cgltf_int>();
+        j++;
+    }
+}
+
+static void vrm0_ensure_floatProperties(const json& materialProperties_object, cgltf_size i, cgltf_data* data)
+{
+    const auto vrm = &data->vrm_v0_0;
+    const auto floatProperties = materialProperties_object["default"]["floatProperties"];
+
+    vrm->materialProperties[i].floatProperties_count = floatProperties.size();
+    if (vrm->materialProperties[i].floatProperties_count > 0) {
+        vrm->materialProperties[i].floatProperties_keys = (char**)calloc(vrm->materialProperties[i].floatProperties_count, sizeof(void*));
+        vrm->materialProperties[i].floatProperties_values = (cgltf_float*)calloc(vrm->materialProperties[i].floatProperties_count, sizeof(cgltf_float));
+        cgltf_size j = 0;
+        for (const auto item : floatProperties.items()) {
+            vrm->materialProperties[i].floatProperties_keys[j] = gltf_alloc_chars(item.key().c_str());
+            vrm->materialProperties[i].floatProperties_values[j] = item.value().get<cgltf_float>();
+            j++;
+        }
+    }
+}
+
+static void vrm0_ensure_vectorProperties(const json& materialProperties_object, cgltf_size i, cgltf_data* data)
+{
+    const auto vrm = &data->vrm_v0_0;
+    const auto vectorProperties = materialProperties_object["default"]["vectorProperties"];
+
+    vrm->materialProperties[i].vectorProperties_count = vectorProperties.size();
+    if (vrm->materialProperties[i].vectorProperties_count > 0) {
+        vrm->materialProperties[i].vectorProperties_keys = (char**)calloc(vrm->materialProperties[i].vectorProperties_count, sizeof(void*));
+        vrm->materialProperties[i].vectorProperties_values = (cgltf_float**)calloc(vrm->materialProperties[i].vectorProperties_count, sizeof(cgltf_float*));
+        vrm->materialProperties[i].vectorProperties_floats_size = (cgltf_size*)calloc(vrm->materialProperties[i].vectorProperties_count, sizeof(cgltf_size));
+        cgltf_size j = 0;
+        for (const auto item : vectorProperties.items()) {
+            const auto values = item.value();
+            vrm->materialProperties[i].vectorProperties_keys[j] = gltf_alloc_chars(item.key().c_str());
+            vrm->materialProperties[i].vectorProperties_values[j] = (cgltf_float*)calloc(values.size(), sizeof(cgltf_float));
+            vrm->materialProperties[i].vectorProperties_floats_size[j] = values.size();
+            cgltf_size k = 0;
+            for (const auto value : values) {
+                vrm->materialProperties[i].vectorProperties_values[j][k] = value.get<cgltf_float>();
+                k++;
+            }
+            j++;
+        }
+    }
+}
+
+static void vrm0_ensure_mapProperties(const json& materialProperties_object, cgltf_size i, cgltf_data* data)
+{
+    const auto vrm = &data->vrm_v0_0;
+    const auto props_default = materialProperties_object["default"];
+    const auto keywordMap = props_default["keywordMap"];
+    const auto tagMap = props_default["tagMap"];
+
+    vrm->materialProperties[i].keywordMap_count = keywordMap.size();
+    if (vrm->materialProperties[i].keywordMap_count > 0) {
+        vrm->materialProperties[i].keywordMap_keys = (char**)calloc(vrm->materialProperties[i].keywordMap_count, sizeof(char*));
+        vrm->materialProperties[i].keywordMap_values = (cgltf_bool*)calloc(vrm->materialProperties[i].keywordMap_count, sizeof(cgltf_bool));
+        cgltf_size j = 0;
+        for (const auto item : keywordMap.items()) {
+            vrm->materialProperties[i].keywordMap_keys[j] = gltf_alloc_chars(item.key().c_str());
+            vrm->materialProperties[i].keywordMap_values[j] = item.value().get<cgltf_bool>();
+            j++;
+        }
+    }
+    vrm->materialProperties[i].tagMap_count = tagMap.size();
+    if (vrm->materialProperties[i].tagMap_count > 0) {
+        vrm->materialProperties[i].tagMap_keys = (char**)calloc(vrm->materialProperties[i].tagMap_count, sizeof(char*));
+        vrm->materialProperties[i].tagMap_values = (char**)calloc(vrm->materialProperties[i].tagMap_count, sizeof(char*));
+        cgltf_size j = 0;
+        for (const auto item : tagMap.items()) {
+            vrm->materialProperties[i].tagMap_keys[j] = gltf_alloc_chars(item.key().c_str());
+            vrm->materialProperties[i].tagMap_values[j] = gltf_alloc_chars(item.value().get<std::string>().c_str());
+            j++;
+        }
+    }
+}
+
 static void vrm0_ensure_defaults(const json& materialProperties_object, cgltf_data* data)
 {
     data->has_vrm_v0_0 = true;
@@ -71,6 +178,7 @@ static void vrm0_ensure_defaults(const json& materialProperties_object, cgltf_da
         vrm->firstPerson.firstPersonBoneOffset = (cgltf_float*)calloc(3, sizeof(cgltf_float));
     }
 
+    // materials
     if (vrm->materialProperties_count == 0) {
         vrm->materialProperties_count = data->materials_count;
         vrm->materialProperties = (cgltf_vrm_material_v0_0*)calloc(data->materials_count, sizeof(cgltf_vrm_material_v0_0));
@@ -81,93 +189,60 @@ static void vrm0_ensure_defaults(const json& materialProperties_object, cgltf_da
             if (materialProperties_object.is_object() && materialProperties_object["default"].is_object()) {
 
                 auto props_default = materialProperties_object["default"];
-                const auto floatProperties = props_default["floatProperties"];
-                const auto vectorProperties = props_default["vectorProperties"];
-                const auto textureProperties = props_default["textureProperties"];
-                const auto keywordMap = props_default["keywordMap"];
-                const auto tagMap = props_default["tagMap"];
 
                 vrm->materialProperties[i].shader = gltf_alloc_chars(props_default["shader"].get<std::string>().c_str());
-                vrm->materialProperties[i].textureProperties_count = textureProperties.size() + 2;
-                vrm->materialProperties[i].textureProperties_keys = (char**)calloc(vrm->materialProperties[i].textureProperties_count, sizeof(void*));
-                vrm->materialProperties[i].textureProperties_values = (cgltf_int*)calloc(vrm->materialProperties[i].textureProperties_count, sizeof(cgltf_int));
-                vrm->materialProperties[i].textureProperties_keys[0] = gltf_alloc_chars("_MainTex");
-                vrm->materialProperties[i].textureProperties_keys[1] = gltf_alloc_chars("_ShadeTexture");
-                vrm->materialProperties[i].textureProperties_values[0] = (cgltf_int)(data->materials[i].pbr_metallic_roughness.base_color_texture.texture - data->textures);
-                vrm->materialProperties[i].textureProperties_values[1] = (cgltf_int)(data->materials[i].pbr_metallic_roughness.base_color_texture.texture - data->textures);
-                {
-                    cgltf_size j = 2;
-                    for (const auto item : textureProperties.items()) {
-                        vrm->materialProperties[i].textureProperties_keys[j] = gltf_alloc_chars(item.key().c_str());
-                        vrm->materialProperties[i].textureProperties_values[j] = item.value().get<cgltf_int>();
-                        j++;
-                    }
-                }
-                {
-                    vrm->materialProperties[i].floatProperties_count = floatProperties.size();
-                    if (vrm->materialProperties[i].floatProperties_count > 0) {
-                        vrm->materialProperties[i].floatProperties_keys = (char**)calloc(vrm->materialProperties[i].floatProperties_count, sizeof(void*));
-                        vrm->materialProperties[i].floatProperties_values = (cgltf_float*)calloc(vrm->materialProperties[i].floatProperties_count, sizeof(cgltf_float));
-                        cgltf_size j = 0;
-                        for (const auto item : floatProperties.items()) {
-                            vrm->materialProperties[i].floatProperties_keys[j] = gltf_alloc_chars(item.key().c_str());
-                            vrm->materialProperties[i].floatProperties_values[j] = item.value().get<cgltf_float>();
-                            j++;
-                        }
-                    }
-                }
-                {
-                    vrm->materialProperties[i].vectorProperties_count = vectorProperties.size();
-                    if (vrm->materialProperties[i].vectorProperties_count > 0) {
-                        vrm->materialProperties[i].vectorProperties_keys = (char**)calloc(vrm->materialProperties[i].vectorProperties_count, sizeof(void*));
-                        vrm->materialProperties[i].vectorProperties_values = (cgltf_float**)calloc(vrm->materialProperties[i].vectorProperties_count, sizeof(cgltf_float*));
-                        vrm->materialProperties[i].vectorProperties_floats_size = (cgltf_size*)calloc(vrm->materialProperties[i].vectorProperties_count, sizeof(cgltf_size));
-                        cgltf_size j = 0;
-                        for (const auto item : vectorProperties.items()) {
-                            const auto values = item.value();
-                            vrm->materialProperties[i].vectorProperties_keys[j] = gltf_alloc_chars(item.key().c_str());
-                            vrm->materialProperties[i].vectorProperties_values[j] = (cgltf_float*)calloc(values.size(), sizeof(cgltf_float));
-                            vrm->materialProperties[i].vectorProperties_floats_size[j] = values.size();
-                            cgltf_size k = 0;
-                            for (const auto value : values) {
-                                vrm->materialProperties[i].vectorProperties_values[j][k] = value.get<cgltf_float>();
-                                k++;
-                            }
-                            j++;
-                        }
-                    }
-                }
-                {
-                    vrm->materialProperties[i].keywordMap_count = keywordMap.size();
-                    if (vrm->materialProperties[i].keywordMap_count > 0) {
-                        vrm->materialProperties[i].keywordMap_keys = (char**)calloc(vrm->materialProperties[i].keywordMap_count, sizeof(void*));
-                        vrm->materialProperties[i].keywordMap_values = (cgltf_bool*)calloc(vrm->materialProperties[i].keywordMap_count, sizeof(cgltf_bool));
-                        cgltf_size j = 0;
-                        for (const auto item : keywordMap.items()) {
-                            vrm->materialProperties[i].keywordMap_keys[j] = gltf_alloc_chars(item.key().c_str());
-                            vrm->materialProperties[i].keywordMap_values[j] = item.value().get<bool>();
-                            j++;
-                        }
-                    }
-                }
-                {
-                    vrm->materialProperties[i].tagMap_count = tagMap.size();
-                    if (vrm->materialProperties[i].tagMap_count > 0) {
-                        vrm->materialProperties[i].tagMap_keys = (char**)calloc(vrm->materialProperties[i].tagMap_count, sizeof(void*));
-                        vrm->materialProperties[i].tagMap_values = (char**)calloc(vrm->materialProperties[i].tagMap_count, sizeof(void*));
-                        cgltf_size j = 0;
-                        for (const auto item : tagMap.items()) {
-                            vrm->materialProperties[i].tagMap_keys[j] = gltf_alloc_chars(item.key().c_str());
-                            vrm->materialProperties[i].tagMap_values[j] = gltf_alloc_chars(item.value().get<std::string>().c_str());
-                            j++;
-                        }
-                    }
-                }
+
+                vrm0_ensure_textureProperties(materialProperties_object, i, data);
+                vrm0_ensure_floatProperties(materialProperties_object, i, data);
+                vrm0_ensure_vectorProperties(materialProperties_object, i, data);
+                vrm0_ensure_mapProperties(materialProperties_object, i, data);
 
             } else {
                 vrm->materialProperties[i].shader = gltf_alloc_chars("VRM_USE_GLTFSHADER");
             }
         }
+    }
+
+    // blendshapes
+    std::unordered_map<std::string, std::vector<cgltf_vrm_blendshape_bind_v0_0>> blendshapes;
+    for (cgltf_size i = 0; i < data->meshes_count; ++i) {
+        const auto mesh = &data->meshes[i];
+        for (cgltf_size j = 0; j < mesh->target_names_count; ++j) {
+            const auto target_name = mesh->target_names[j];
+            if (strcmp(target_name, "viseme_aa") == 0) {
+                vrm0_store_blendshapes("A", i, j, blendshapes);
+            } else if (strcmp(target_name, "viseme_I") == 0) {
+                vrm0_store_blendshapes("I", i, j, blendshapes);
+            } else if (strcmp(target_name, "viseme_U") == 0) {
+                vrm0_store_blendshapes("U", i, j, blendshapes);
+            } else if (strcmp(target_name, "viseme_E") == 0) {
+                vrm0_store_blendshapes("E", i, j, blendshapes);
+            } else if (strcmp(target_name, "viseme_O") == 0) {
+                vrm0_store_blendshapes("O", i, j, blendshapes);
+            } else if (strcmp(target_name, "eyeBlinkLeft") == 0) {
+                vrm0_store_blendshapes("Blink", i, j, blendshapes);
+            } else if (strcmp(target_name, "eyeBlinkRight") == 0) {
+                vrm0_store_blendshapes("Blink", i, j, blendshapes);
+            }
+        }
+    }
+    data->vrm_v0_0.blendShapeMaster.blendShapeGroups_count = blendshapes.size();
+    data->vrm_v0_0.blendShapeMaster.blendShapeGroups = (cgltf_vrm_blendshape_group_v0_0*)calloc(blendshapes.size(), sizeof(cgltf_vrm_blendshape_group_v0_0));
+    cgltf_size index = 0;
+    for (const auto item : blendshapes) {
+        const auto values = item.second;
+        const auto store_size = values.size() * sizeof(cgltf_vrm_blendshape_bind_v0_0);
+        const auto binds = (cgltf_vrm_blendshape_bind_v0_0*)calloc(store_size, 1);
+        memcpy_s(binds, store_size, values.data(), store_size);
+        cgltf_vrm_blendshape_group_presetName_v0_0 preset_name;
+        select_cgltf_vrm_blendshape_group_presetName_v0_0(gltf_alloc_lower_chars(item.first), &preset_name);
+        data->vrm_v0_0.blendShapeMaster.blendShapeGroups[index] = {
+            gltf_alloc_chars(item.first.c_str()), preset_name,
+            binds,
+            item.second.size(),
+            nullptr, 0, false
+        };
+        index++;
     }
 }
 
