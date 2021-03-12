@@ -34,16 +34,9 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
-static bool gltf_leackcheck_enabled = false;
+static bool gltf_leackcheck_enabled = false; // cheating
 
-static void* gltf_calloc(size_t n, size_t size) 
-{
-    if (gltf_leackcheck_enabled) {
-        return stb_leakcheck_calloc(n * size, __FILE__, __LINE__);
-    } else {
-        return calloc(n, size);
-    }
-}
+#define gltf_calloc(N,SIZE) (gltf_leackcheck_enabled ? stb_leakcheck_calloc(N * SIZE, __FILE__, __LINE__) : calloc(N, SIZE))
 
 static void gltf_free(void*ptr)
 {
@@ -68,11 +61,14 @@ static void gltf_leackcheck_free(void* user, void* ptr)
 
 static char* gltf_alloc_chars(const char* str)
 {
+    if (str == nullptr) 
+        return nullptr;
+
     const auto length = strlen(str);
     if (length == 0)
         return (char*)gltf_calloc(1, 1);
 
-    auto dst = (char*)gltf_calloc(length + 1, 1);
+    auto dst = (char*)gltf_calloc(length + 1, sizeof(char));
     if (dst > 0)
         strncpy(dst, str, length);
 
@@ -84,11 +80,6 @@ static std::string gltf_str_tolower(std::string s)
     std::transform(s.begin(), s.end(), s.begin(),
         [](unsigned char c) { return (unsigned char)std::tolower(c); });
     return s;
-}
-
-static char* gltf_alloc_lower_chars(std::string s)
-{
-    return gltf_alloc_chars(gltf_str_tolower(s).c_str());
 }
 
 static cgltf_result gltf_wstring_file_read(const struct cgltf_memory_options* memory_options, const struct cgltf_file_options* file_options, const std::wstring path, cgltf_size* size, void** data)

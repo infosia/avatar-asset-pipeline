@@ -235,7 +235,7 @@ static void vrm0_ensure_defaults(const json& materialProperties_object, cgltf_da
         const auto binds = (cgltf_vrm_blendshape_bind_v0_0*)gltf_calloc(store_size, 1);
         memcpy_s(binds, store_size, values.data(), store_size);
         cgltf_vrm_blendshape_group_presetName_v0_0 preset_name;
-        select_cgltf_vrm_blendshape_group_presetName_v0_0(gltf_alloc_lower_chars(item.first), &preset_name);
+        select_cgltf_vrm_blendshape_group_presetName_v0_0(gltf_str_tolower(item.first).c_str(), &preset_name);
         data->vrm_v0_0.blendShapeMaster.blendShapeGroups[index] = {
             gltf_alloc_chars(item.first.c_str()), preset_name,
             binds,
