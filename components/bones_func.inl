@@ -181,7 +181,7 @@ static bool gltf_parse_bone_mappings(cgltf_data* data, AvatarBuild::bone_mapping
     (void)data, mappings;
 
     json j;
-    if (!json_parse(options->bone_config, &j)) {
+    if (!json_parse(options->input_config, &j)) {
         return false;
     }
 

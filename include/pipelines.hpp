@@ -37,8 +37,8 @@ struct cmd_options {
     std::string config;
     std::string input;
     std::string output;
-    std::string bone_config;
-    std::string vrm0_config;
+    std::string input_config;
+    std::string output_config;
     std::string fbx2gltf;
     bool verbose;
     bool debug;

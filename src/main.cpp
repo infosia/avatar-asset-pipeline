@@ -177,11 +177,11 @@ int main(int argc, char** argv)
     std::string output = "output.glb";
     app.add_option("-o,--output", output, "Output file name");
 
-    std::string bone_config;
-    app.add_option("-b,--bone", bone_config, "Bone configuration file name (JSON)");
+    std::string input_config;
+    app.add_option("-m,--input_config", input_config, "Input configuration file name (JSON)");
 
-    std::string vrm0_config = "models/input.vrm0_config.json";
-    app.add_option("-m,--vrm0", vrm0_config, "VRM 0.0 configuration file name (JSON)");
+    std::string output_config = "models/output.vrm0.json";
+    app.add_option("-n,--output_config", output_config, "Output configuration file name (JSON)");
 
     std::string fbx2gltf = "extern/fbx2gltf.exe";
     app.add_option("-x,--fbx2gltf", fbx2gltf, "Path to fbx2gltf executable")->check(CLI::ExistingFile);
@@ -206,7 +206,7 @@ int main(int argc, char** argv)
         gltf_leackcheck_enabled = true;
     }
 
-    cmd_options options = { config, input, output, bone_config, vrm0_config, fbx2gltf, verbose, debug, gltf_options };
+    cmd_options options = { config, input, output, input_config, output_config, fbx2gltf, verbose, debug, gltf_options };
 
     int status = 0;
     if (!start_pipelines(&options)) {

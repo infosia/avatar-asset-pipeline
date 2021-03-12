@@ -147,7 +147,7 @@ Still, you can explicitly specify bone naming conversions by using `--bone` opti
 Check out `pipelines` directory for working pipeline examples in practice.
 
 ```
-> avatar-build --config pipelines/glb2vrm0_T_pose.json --debug --vrm0 models/input.vrm0_config.json -v --fbx2gltf extern/fbx2gltf.exe --bone models/input.readyplayerme.bones.json -i models/readyplayerme-feminine.glb -o models/readyplayerme-feminine.vrm
+> avatar-build -c pipelines/glb2vrm0_T_pose.json --debug --output_config models/output.vrm0.json -v --fbx2gltf extern/fbx2gltf.exe --input_config models/input.readyplayerme.bones.json -i ../models/readyplayerme-feminine.glb -o ../models/readyplayerme-feminine.vrm
 ```
 
 ## Options
@@ -157,8 +157,8 @@ Check out `pipelines` directory for working pipeline examples in practice.
 * `--debug`: Enable debug output (such as JSON dump)
 * `--input`: Input file name
 * `--output` "Output file name
-* `--bone`: Bone configuration file name (JSON)
-* `--vrm0`: VRM 0.0 configuration file name (JSON)
+* `--input_config`: Input configuration file name (JSON)
+* `--output_config`: Output configuration file name (JSON)
 * `--fbx2gltf`: Path to fbx2gltf executable
 
 
