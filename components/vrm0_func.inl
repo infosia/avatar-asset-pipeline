@@ -25,7 +25,7 @@ static bool vrm0_ensure_degreemap(cgltf_vrm_firstperson_degreemap_v0_0* degreema
 {
     if (degreemap->curve_count == 0) {
         degreemap->curve_count = 8;
-        degreemap->curve = (cgltf_float*)calloc(8, sizeof(cgltf_float));
+        degreemap->curve = (cgltf_float*)gltf_calloc(8, sizeof(cgltf_float));
         degreemap->xRange = 90;
         degreemap->yRange = 10;
 
@@ -59,8 +59,8 @@ static void vrm0_ensure_textureProperties(const json& materialProperties_object,
     const auto textureProperties = materialProperties_object["default"]["textureProperties"];
 
     vrm->materialProperties[i].textureProperties_count = textureProperties.size() + 2;
-    vrm->materialProperties[i].textureProperties_keys = (char**)calloc(vrm->materialProperties[i].textureProperties_count, sizeof(void*));
-    vrm->materialProperties[i].textureProperties_values = (cgltf_int*)calloc(vrm->materialProperties[i].textureProperties_count, sizeof(cgltf_int));
+    vrm->materialProperties[i].textureProperties_keys = (char**)gltf_calloc(vrm->materialProperties[i].textureProperties_count, sizeof(void*));
+    vrm->materialProperties[i].textureProperties_values = (cgltf_int*)gltf_calloc(vrm->materialProperties[i].textureProperties_count, sizeof(cgltf_int));
     vrm->materialProperties[i].textureProperties_keys[0] = gltf_alloc_chars("_MainTex");
     vrm->materialProperties[i].textureProperties_keys[1] = gltf_alloc_chars("_ShadeTexture");
     vrm->materialProperties[i].textureProperties_values[0] = (cgltf_int)(data->materials[i].pbr_metallic_roughness.base_color_texture.texture - data->textures);
@@ -80,8 +80,8 @@ static void vrm0_ensure_floatProperties(const json& materialProperties_object, c
 
     vrm->materialProperties[i].floatProperties_count = floatProperties.size();
     if (vrm->materialProperties[i].floatProperties_count > 0) {
-        vrm->materialProperties[i].floatProperties_keys = (char**)calloc(vrm->materialProperties[i].floatProperties_count, sizeof(void*));
-        vrm->materialProperties[i].floatProperties_values = (cgltf_float*)calloc(vrm->materialProperties[i].floatProperties_count, sizeof(cgltf_float));
+        vrm->materialProperties[i].floatProperties_keys = (char**)gltf_calloc(vrm->materialProperties[i].floatProperties_count, sizeof(void*));
+        vrm->materialProperties[i].floatProperties_values = (cgltf_float*)gltf_calloc(vrm->materialProperties[i].floatProperties_count, sizeof(cgltf_float));
         cgltf_size j = 0;
         for (const auto item : floatProperties.items()) {
             vrm->materialProperties[i].floatProperties_keys[j] = gltf_alloc_chars(item.key().c_str());
@@ -98,14 +98,14 @@ static void vrm0_ensure_vectorProperties(const json& materialProperties_object, 
 
     vrm->materialProperties[i].vectorProperties_count = vectorProperties.size();
     if (vrm->materialProperties[i].vectorProperties_count > 0) {
-        vrm->materialProperties[i].vectorProperties_keys = (char**)calloc(vrm->materialProperties[i].vectorProperties_count, sizeof(void*));
-        vrm->materialProperties[i].vectorProperties_values = (cgltf_float**)calloc(vrm->materialProperties[i].vectorProperties_count, sizeof(cgltf_float*));
-        vrm->materialProperties[i].vectorProperties_floats_size = (cgltf_size*)calloc(vrm->materialProperties[i].vectorProperties_count, sizeof(cgltf_size));
+        vrm->materialProperties[i].vectorProperties_keys = (char**)gltf_calloc(vrm->materialProperties[i].vectorProperties_count, sizeof(void*));
+        vrm->materialProperties[i].vectorProperties_values = (cgltf_float**)gltf_calloc(vrm->materialProperties[i].vectorProperties_count, sizeof(cgltf_float*));
+        vrm->materialProperties[i].vectorProperties_floats_size = (cgltf_size*)gltf_calloc(vrm->materialProperties[i].vectorProperties_count, sizeof(cgltf_size));
         cgltf_size j = 0;
         for (const auto item : vectorProperties.items()) {
             const auto values = item.value();
             vrm->materialProperties[i].vectorProperties_keys[j] = gltf_alloc_chars(item.key().c_str());
-            vrm->materialProperties[i].vectorProperties_values[j] = (cgltf_float*)calloc(values.size(), sizeof(cgltf_float));
+            vrm->materialProperties[i].vectorProperties_values[j] = (cgltf_float*)gltf_calloc(values.size(), sizeof(cgltf_float));
             vrm->materialProperties[i].vectorProperties_floats_size[j] = values.size();
             cgltf_size k = 0;
             for (const auto value : values) {
@@ -126,8 +126,8 @@ static void vrm0_ensure_mapProperties(const json& materialProperties_object, cgl
 
     vrm->materialProperties[i].keywordMap_count = keywordMap.size();
     if (vrm->materialProperties[i].keywordMap_count > 0) {
-        vrm->materialProperties[i].keywordMap_keys = (char**)calloc(vrm->materialProperties[i].keywordMap_count, sizeof(char*));
-        vrm->materialProperties[i].keywordMap_values = (cgltf_bool*)calloc(vrm->materialProperties[i].keywordMap_count, sizeof(cgltf_bool));
+        vrm->materialProperties[i].keywordMap_keys = (char**)gltf_calloc(vrm->materialProperties[i].keywordMap_count, sizeof(char*));
+        vrm->materialProperties[i].keywordMap_values = (cgltf_bool*)gltf_calloc(vrm->materialProperties[i].keywordMap_count, sizeof(cgltf_bool));
         cgltf_size j = 0;
         for (const auto item : keywordMap.items()) {
             vrm->materialProperties[i].keywordMap_keys[j] = gltf_alloc_chars(item.key().c_str());
@@ -137,8 +137,8 @@ static void vrm0_ensure_mapProperties(const json& materialProperties_object, cgl
     }
     vrm->materialProperties[i].tagMap_count = tagMap.size();
     if (vrm->materialProperties[i].tagMap_count > 0) {
-        vrm->materialProperties[i].tagMap_keys = (char**)calloc(vrm->materialProperties[i].tagMap_count, sizeof(char*));
-        vrm->materialProperties[i].tagMap_values = (char**)calloc(vrm->materialProperties[i].tagMap_count, sizeof(char*));
+        vrm->materialProperties[i].tagMap_keys = (char**)gltf_calloc(vrm->materialProperties[i].tagMap_count, sizeof(char*));
+        vrm->materialProperties[i].tagMap_values = (char**)gltf_calloc(vrm->materialProperties[i].tagMap_count, sizeof(char*));
         cgltf_size j = 0;
         for (const auto item : tagMap.items()) {
             vrm->materialProperties[i].tagMap_keys[j] = gltf_alloc_chars(item.key().c_str());
@@ -166,7 +166,7 @@ static void vrm0_ensure_defaults(const json& materialProperties_object, cgltf_da
 
     if (vrm->firstPerson.meshAnnotations_count == 0) {
         vrm->firstPerson.meshAnnotations_count = data->meshes_count;
-        vrm->firstPerson.meshAnnotations = (cgltf_vrm_firstperson_meshannotation_v0_0*)calloc(data->meshes_count, sizeof(cgltf_vrm_firstperson_meshannotation_v0_0));
+        vrm->firstPerson.meshAnnotations = (cgltf_vrm_firstperson_meshannotation_v0_0*)gltf_calloc(data->meshes_count, sizeof(cgltf_vrm_firstperson_meshannotation_v0_0));
         for (cgltf_size i = 0; i < data->meshes_count; ++i) {
             vrm->firstPerson.meshAnnotations[i].mesh = static_cast<cgltf_int>(i);
             vrm->firstPerson.meshAnnotations[i].firstPersonFlag = gltf_alloc_chars("Auto");
@@ -175,13 +175,13 @@ static void vrm0_ensure_defaults(const json& materialProperties_object, cgltf_da
 
     if (vrm->firstPerson.firstPersonBoneOffset_count == 0) {
         vrm->firstPerson.firstPersonBoneOffset_count = 3;
-        vrm->firstPerson.firstPersonBoneOffset = (cgltf_float*)calloc(3, sizeof(cgltf_float));
+        vrm->firstPerson.firstPersonBoneOffset = (cgltf_float*)gltf_calloc(3, sizeof(cgltf_float));
     }
 
     // materials
     if (vrm->materialProperties_count == 0) {
         vrm->materialProperties_count = data->materials_count;
-        vrm->materialProperties = (cgltf_vrm_material_v0_0*)calloc(data->materials_count, sizeof(cgltf_vrm_material_v0_0));
+        vrm->materialProperties = (cgltf_vrm_material_v0_0*)gltf_calloc(data->materials_count, sizeof(cgltf_vrm_material_v0_0));
         for (cgltf_size i = 0; i < data->materials_count; ++i) {
             vrm->materialProperties[i].name = gltf_alloc_chars(data->materials[i].name);
             vrm->materialProperties[i].renderQueue = 2000;
@@ -227,12 +227,12 @@ static void vrm0_ensure_defaults(const json& materialProperties_object, cgltf_da
         }
     }
     data->vrm_v0_0.blendShapeMaster.blendShapeGroups_count = blendshapes.size();
-    data->vrm_v0_0.blendShapeMaster.blendShapeGroups = (cgltf_vrm_blendshape_group_v0_0*)calloc(blendshapes.size(), sizeof(cgltf_vrm_blendshape_group_v0_0));
+    data->vrm_v0_0.blendShapeMaster.blendShapeGroups = (cgltf_vrm_blendshape_group_v0_0*)gltf_calloc(blendshapes.size(), sizeof(cgltf_vrm_blendshape_group_v0_0));
     cgltf_size index = 0;
     for (const auto item : blendshapes) {
         const auto values = item.second;
         const auto store_size = values.size() * sizeof(cgltf_vrm_blendshape_bind_v0_0);
-        const auto binds = (cgltf_vrm_blendshape_bind_v0_0*)calloc(store_size, 1);
+        const auto binds = (cgltf_vrm_blendshape_bind_v0_0*)gltf_calloc(store_size, 1);
         memcpy_s(binds, store_size, values.data(), store_size);
         cgltf_vrm_blendshape_group_presetName_v0_0 preset_name;
         select_cgltf_vrm_blendshape_group_presetName_v0_0(gltf_alloc_lower_chars(item.first), &preset_name);
@@ -299,7 +299,7 @@ static bool vrm0_update_bones(AvatarBuild::bone_mappings* mappings, cgltf_data* 
     const auto humanoid = &vrm->humanoid;
 
     humanoid->humanBones_count = mappings->name_to_node.size();
-    humanoid->humanBones = (cgltf_vrm_humanoid_bone_v0_0*)calloc(humanoid->humanBones_count, sizeof(cgltf_vrm_humanoid_bone_v0_0));
+    humanoid->humanBones = (cgltf_vrm_humanoid_bone_v0_0*)gltf_calloc(humanoid->humanBones_count, sizeof(cgltf_vrm_humanoid_bone_v0_0));
 
     for (cgltf_size i = 0; i < data->nodes_count; ++i) {
         const auto node = &data->nodes[i];
@@ -340,9 +340,9 @@ static bool vrm0_update_bones(AvatarBuild::bone_mappings* mappings, cgltf_data* 
         dst->max_count = 1;
         dst->node = 0;
 
-        dst->center = (cgltf_float*)calloc(3, sizeof(cgltf_float));
-        dst->max = (cgltf_float*)calloc(3, sizeof(cgltf_float));
-        dst->min = (cgltf_float*)calloc(3, sizeof(cgltf_float));
+        dst->center = (cgltf_float*)gltf_calloc(3, sizeof(cgltf_float));
+        dst->max = (cgltf_float*)gltf_calloc(3, sizeof(cgltf_float));
+        dst->min = (cgltf_float*)gltf_calloc(3, sizeof(cgltf_float));
 
         const auto found = mappings->node_index_map.find(node->name);
         if (found != mappings->node_index_map.end()) {

@@ -10,7 +10,7 @@ set(SRC_FILES
   src/main.cpp
   components/json_func.inl
   components/gltf_func.inl
-  components/gltf_bone_mappings.inl
+  components/bones_func.inl
   components/vrm0_func.inl
   ${pipeline_FILES}
 )

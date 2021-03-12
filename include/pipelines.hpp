@@ -42,6 +42,7 @@ struct cmd_options {
     std::string fbx2gltf;
     bool verbose;
     bool debug;
+    cgltf_options gltf_options;
 };
 
 struct pipeline {

@@ -110,15 +110,14 @@ protected:
         AVATAR_PIPELINE_LOG("[INFO] reading " << input);
 
         cgltf_data* data = nullptr;
-        cgltf_options gltf_options = {};
-        cgltf_result result = cgltf_parse_file(&gltf_options, input.c_str(), &data);
+        cgltf_result result = cgltf_parse_file(&options->gltf_options, input.c_str(), &data);
 
         if (result != cgltf_result_success) {
             AVATAR_PIPELINE_LOG("[ERROR] failed to parse file " << input);
             return;
         }
 
-        result = cgltf_load_buffers(&gltf_options, data, input.c_str());
+        result = cgltf_load_buffers(&options->gltf_options, data, input.c_str());
 
         if (result != cgltf_result_success) {
             AVATAR_PIPELINE_LOG("[ERROR] failed to load buffers from " << input);
@@ -137,7 +136,7 @@ protected:
 
             if (result == cgltf_result_success) {
                 AVATAR_PIPELINE_LOG("[INFO] writing " << options->output);
-                discarded = !gltf_write_file(data, options->output);
+                discarded = !gltf_write_file(&options->gltf_options, data, options->output);
                 if (discarded) {
                     AVATAR_PIPELINE_LOG("[ERROR] faild to write output " << options->output);                
                 }
@@ -148,7 +147,7 @@ protected:
         }
 
         if (options->debug) {
-            gltf_write_json(data, options->output + ".json");
+            gltf_write_json(&options->gltf_options, data, options->output + ".json");
         }
 
         cgltf_free(data);

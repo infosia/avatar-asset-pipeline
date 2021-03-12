@@ -26,6 +26,7 @@
 #include <sstream>
 #include <string>
 #include <unordered_map>
+#include <codecvt>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_SILENT_WARNINGS
@@ -33,13 +34,45 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
+static bool gltf_leackcheck_enabled = false;
+
+static void* gltf_calloc(size_t n, size_t size) 
+{
+    if (gltf_leackcheck_enabled) {
+        return stb_leakcheck_calloc(n * size, __FILE__, __LINE__);
+    } else {
+        return calloc(n, size);
+    }
+}
+
+static void gltf_free(void*ptr)
+{
+    if (gltf_leackcheck_enabled) {
+        return stb_leakcheck_free(ptr);
+    } else {
+        return free(ptr);
+    }
+}
+
+static void* gltf_leakcheck_malloc(void* user, cgltf_size size)
+{
+    (void)user;
+    return stb_leakcheck_malloc(size, __FILE__, __LINE__);
+}
+
+static void gltf_leackcheck_free(void* user, void* ptr)
+{
+    (void)user;
+    stb_leakcheck_free(ptr);
+}
+
 static char* gltf_alloc_chars(const char* str)
 {
     const auto length = strlen(str);
     if (length == 0)
-        return (char*)calloc(1, 1);
+        return (char*)gltf_calloc(1, 1);
 
-    auto dst = (char*)calloc(length + 1, 1);
+    auto dst = (char*)gltf_calloc(length + 1, 1);
     if (dst > 0)
         strncpy(dst, str, length);
 
@@ -56,6 +89,71 @@ static std::string gltf_str_tolower(std::string s)
 static char* gltf_alloc_lower_chars(std::string s)
 {
     return gltf_alloc_chars(gltf_str_tolower(s).c_str());
+}
+
+static cgltf_result gltf_wstring_file_read(const struct cgltf_memory_options* memory_options, const struct cgltf_file_options* file_options, const std::wstring path, cgltf_size* size, void** data)
+{
+    (void)file_options;
+    void* (*memory_alloc)(void*, cgltf_size) = memory_options->alloc ? memory_options->alloc : &cgltf_default_alloc;
+    void (*memory_free)(void*, void*) = memory_options->free ? memory_options->free : &cgltf_default_free;
+
+    FILE* file = _wfopen(path.c_str(), L"rb");
+
+    if (!file)
+    {
+        return cgltf_result_file_not_found;
+    }
+
+    cgltf_size file_size = size ? *size : 0;
+
+    if (file_size == 0)
+    {
+        fseek(file, 0, SEEK_END);
+
+        long length = ftell(file);
+        if (length < 0)
+        {
+            fclose(file);
+            return cgltf_result_io_error;
+        }
+
+        fseek(file, 0, SEEK_SET);
+        file_size = (cgltf_size)length;
+    }
+
+    char* file_data = (char*)memory_alloc(memory_options->user_data, file_size);
+    if (!file_data)
+    {
+        fclose(file);
+        return cgltf_result_out_of_memory;
+    }
+
+    cgltf_size read_size = fread(file_data, 1, file_size, file);
+
+    fclose(file);
+
+    if (read_size != file_size)
+    {
+        memory_free(memory_options->user_data, file_data);
+        return cgltf_result_io_error;
+    }
+
+    if (size)
+    {
+        *size = file_size;
+    }
+    if (data)
+    {
+        *data = file_data;
+    }
+
+    return cgltf_result_success;
+}
+
+static cgltf_result gltf_file_read(const struct cgltf_memory_options* memory_options, const struct cgltf_file_options* file_options, const char* path, cgltf_size* size, void** data)
+{
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    return gltf_wstring_file_read(memory_options, file_options, converter.from_bytes(path), size, data);
 }
 
 static void gltf_f3_min(cgltf_float* a, cgltf_float* b, cgltf_float* out)
@@ -86,7 +184,7 @@ static bool gltf_remove_animation(cgltf_data* data)
 static bool gltf_update_joint_buffer(cgltf_accessor* joints)
 {
     const cgltf_size new_buffer_view_size = joints->count * 4 * sizeof(std::uint16_t);
-    std::uint16_t* joints_data = (std::uint16_t*)calloc(joints->count * 4, sizeof(std::uint16_t));
+    std::uint16_t* joints_data = (std::uint16_t*)gltf_calloc(joints->count * 4, sizeof(std::uint16_t));
     for (cgltf_size i = 0; i < joints->count; ++i) {
         cgltf_uint out[4];
         if (!cgltf_accessor_read_uint(joints, i, out, 4))
@@ -138,7 +236,7 @@ static bool gltf_upcast_joints(cgltf_data* data)
         total_size += (data->buffer_views[j].size + 3) & ~3;
     }
 
-    auto buffer_data = (uint8_t*)calloc(total_size, sizeof(uint8_t)); // will be freed at cgltf_free()
+    auto buffer_data = (uint8_t*)gltf_calloc(total_size, sizeof(uint8_t)); // will be freed at cgltf_free()
     auto buffer_dst = buffer_data;
     for (cgltf_size j = 0; j < data->buffer_views_count; ++j) {
         const auto buffer_view = &data->buffer_views[j];
@@ -152,7 +250,7 @@ static bool gltf_upcast_joints(cgltf_data* data)
         buffer_dst += (size_to_copy + 3) & ~3;
 
         if (buffer_view->data != nullptr) {
-            free(buffer_view->data);
+            data->memory.free(data->memory.user_data, buffer_view->data);
             buffer_view->data = nullptr;
         }
     }
@@ -292,17 +390,16 @@ static uint32_t gltf_get_buffer_size(cgltf_data* data)
     return size;
 }
 
-static std::string gltf_get_json(cgltf_data* data)
+static std::string gltf_get_json(cgltf_options* options, cgltf_data* data)
 {
-    cgltf_options options = {};
-    auto size = cgltf_write(&options, NULL, 0, data);
-    auto buffer = (char*)calloc(size, sizeof(char*));
-    cgltf_write(&options, buffer, size, data);
+    auto size = cgltf_write(options, NULL, 0, data);
+    auto buffer = (char*)gltf_calloc(size, sizeof(char*));
+    cgltf_write(options, buffer, size, data);
 
     // compress JSON
     auto j = nlohmann::json::parse(buffer, nullptr, false, true);
 
-    free(buffer);
+    data->memory.free(data->memory.user_data, buffer);
 
     if (j.is_object()) {
         auto dump = j.dump();
@@ -318,14 +415,14 @@ static std::string gltf_get_json(cgltf_data* data)
     return "";
 }
 
-static bool gltf_write_file(cgltf_data* data, std::string output)
+static bool gltf_write_file(cgltf_options* options, cgltf_data* data, std::string output)
 {
     std::ofstream fout(output, std::ios::trunc | std::ios::binary);
     if (fout.fail()) {
         return false;
     }
 
-    const auto in_json = gltf_get_json(data);
+    const auto in_json = gltf_get_json(options, data);
     const auto in_json_cstr = in_json.c_str();
     const auto in_json_size = (uint32_t)strlen(in_json_cstr);
     uint32_t total_size = GlbHeaderSize + GlbChunkHeaderSize + in_json_size + gltf_get_buffer_size(data);
@@ -359,10 +456,9 @@ static bool gltf_write_file(cgltf_data* data, std::string output)
     return true;
 }
 
-static bool gltf_write_json(cgltf_data* data, std::string output)
+static bool gltf_write_json(cgltf_options* options, cgltf_data* data, std::string output)
 {
-    cgltf_options options = {};
-    return cgltf_write_file(&options, output.c_str(), data) == cgltf_result_success;
+    return cgltf_write_file(options, output.c_str(), data) == cgltf_result_success;
 }
 
 static glm::mat4 gltf_get_node_transform(const cgltf_node* node)
@@ -547,13 +643,13 @@ static bool gltf_apply_weight(cgltf_node* skin_node, cgltf_float* positions, cgl
 
 static bool gltf_apply_weights(cgltf_node* skin_node, cgltf_accessor* positions, cgltf_accessor* joints, cgltf_accessor* weights, cgltf_accessor* normals)
 {
-    cgltf_uint* joints_data = (cgltf_uint*)calloc(joints->count * 4, sizeof(cgltf_uint));
+    cgltf_uint* joints_data = (cgltf_uint*)gltf_calloc(joints->count * 4, sizeof(cgltf_uint));
     for (cgltf_size i = 0; i < joints->count; ++i) {
         cgltf_accessor_read_uint(joints, i, joints_data + (i * 4), 4);
     }
 
     cgltf_size unpack_count = weights->count * 4;
-    cgltf_float* weights_data = (cgltf_float*)calloc(unpack_count, sizeof(cgltf_float));
+    cgltf_float* weights_data = (cgltf_float*)gltf_calloc(unpack_count, sizeof(cgltf_float));
     cgltf_accessor_unpack_floats(weights, weights_data, unpack_count);
 
     uint8_t* positions_data = (uint8_t*)positions->buffer_view->buffer->data + positions->buffer_view->offset + positions->offset;
@@ -580,8 +676,8 @@ static bool gltf_apply_weights(cgltf_node* skin_node, cgltf_accessor* positions,
         gltf_f3_min(position, positions->min, positions->min);
     }
 
-    free(joints_data);
-    free(weights_data);
+    gltf_free(joints_data);
+    gltf_free(weights_data);
 
     return true;
 }

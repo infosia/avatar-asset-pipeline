@@ -25,6 +25,9 @@
 #include <string>
 #include <vector>
 
+#define STB_LEAKCHECK_IMPLEMENTATION
+#include "stb_leakcheck.h"
+
 #include "CLI11.hpp"
 #include "DSPatch.h"
 #include "json.hpp"
@@ -38,7 +41,7 @@
 #include "pipelines.hpp"
 #include "gltf_func.inl"
 #include "json_func.inl"
-#include "gltf_bone_mappings.inl"
+#include "bones_func.inl"
 #include "vrm0_func.inl"
 
 #include "glb_T_pose.hpp"
@@ -191,11 +194,27 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    cmd_options options = { config, input, output, bone_config, vrm0_config, fbx2gltf, verbose, debug };
+    cgltf_options gltf_options = { };
 
-    if (!start_pipelines(&options)) {
-        return 1;
+    // enable multibyte file name
+    gltf_options.file.read = &gltf_file_read;
+
+    // setup memory allocation check
+    if (debug) {
+        gltf_options.memory.alloc = &gltf_leakcheck_malloc;
+        gltf_options.memory.free = &gltf_leackcheck_free;
+        gltf_leackcheck_enabled = true;
     }
 
-    return 0;
+    cmd_options options = { config, input, output, bone_config, vrm0_config, fbx2gltf, verbose, debug, gltf_options };
+
+    int status = 0;
+    if (!start_pipelines(&options)) {
+        status = 1;
+    }
+
+    if (debug)
+        stb_leakcheck_dumpmem();
+
+    return status;
 }
