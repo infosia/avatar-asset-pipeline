@@ -56,7 +56,11 @@ static void vrm0_store_blendshapes(const std::string name, cgltf_size mesh, cglt
 static void vrm0_ensure_textureProperties(const json& materialProperties_object, cgltf_size i, cgltf_data* data)
 {
     const auto vrm = &data->vrm_v0_0;
-    const auto textureProperties = materialProperties_object["default"]["textureProperties"];
+    auto textureProperties = materialProperties_object["default"]["textureProperties"];
+
+    if (data->materials[i].normal_texture.texture != nullptr) {
+        textureProperties["_BumpMap"] = (data->materials[i].normal_texture.texture - data->textures);
+    }
 
     vrm->materialProperties[i].textureProperties_count = textureProperties.size() + 2;
     vrm->materialProperties[i].textureProperties_keys = (char**)gltf_calloc(vrm->materialProperties[i].textureProperties_count, sizeof(void*));
@@ -121,8 +125,12 @@ static void vrm0_ensure_mapProperties(const json& materialProperties_object, cgl
 {
     const auto vrm = &data->vrm_v0_0;
     const auto props_default = materialProperties_object["default"];
-    const auto keywordMap = props_default["keywordMap"];
-    const auto tagMap = props_default["tagMap"];
+    auto keywordMap = props_default["keywordMap"];
+    auto tagMap = props_default["tagMap"];
+
+    if (data->materials[i].normal_texture.texture != nullptr) {
+        keywordMap["_NORMALMAP"] = true;
+    }
 
     vrm->materialProperties[i].keywordMap_count = keywordMap.size();
     if (vrm->materialProperties[i].keywordMap_count > 0) {

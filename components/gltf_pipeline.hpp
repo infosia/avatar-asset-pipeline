@@ -126,12 +126,21 @@ protected:
 
         glb_loader->set_data(data);
 
-        circuit->Tick(DSPatch::Component::TickMode::Series);
-       
-        auto discarded = tick_result->is_discarded();
-        outputs.SetValue(0, discarded);
+        bool discarded = false;
 
-        if (!tick_result->is_discarded()) {
+        try {
+            circuit->Tick(DSPatch::Component::TickMode::Series);
+            discarded = tick_result->is_discarded();
+            outputs.SetValue(0, discarded);
+        } catch (json::exception e) {
+            AVATAR_PIPELINE_LOG("[ERROR] failed to parse JSON: " << e.what());                
+            discarded = true;
+        } catch (std::exception e) {
+            AVATAR_PIPELINE_LOG("[ERROR] faild to process pipeline " << e.what());                
+            discarded = true;
+        }
+
+        if (!discarded) {
             result = cgltf_validate(data);
 
             if (result == cgltf_result_success) {
