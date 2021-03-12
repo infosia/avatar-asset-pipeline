@@ -221,8 +221,27 @@ static void vrm0_ensure_defaults(const json& materialProperties_object, cgltf_da
                 vrm0_store_blendshapes("O", i, j, blendshapes);
             } else if (strcmp(target_name, "eyeBlinkLeft") == 0) {
                 vrm0_store_blendshapes("Blink", i, j, blendshapes);
+                vrm0_store_blendshapes("Blink_L", i, j, blendshapes);
             } else if (strcmp(target_name, "eyeBlinkRight") == 0) {
                 vrm0_store_blendshapes("Blink", i, j, blendshapes);
+                vrm0_store_blendshapes("Blink_R", i, j, blendshapes);
+            } else if (strcmp(target_name, "browInnerUp") == 0) {
+                vrm0_store_blendshapes("Joy", i, j, blendshapes);
+                vrm0_store_blendshapes("Sorrow", i, j, blendshapes);
+            } else if (strcmp(target_name, "mouthSmile") == 0) {
+                vrm0_store_blendshapes("Joy", i, j, blendshapes);
+            } else if (strcmp(target_name, "browOuterUpLeft") == 0) {
+                vrm0_store_blendshapes("Angry", i, j, blendshapes);
+            } else if (strcmp(target_name, "browOuterUpRight") == 0) {
+                vrm0_store_blendshapes("Angry", i, j, blendshapes);
+            } else if (strcmp(target_name, "eyeSquintLeft") == 0) {
+                vrm0_store_blendshapes("Angry", i, j, blendshapes);
+            } else if (strcmp(target_name, "eyeSquintRight") == 0) {
+                vrm0_store_blendshapes("Angry", i, j, blendshapes);
+            } else if (strcmp(target_name, "mouthFrownLeft") == 0) {
+                vrm0_store_blendshapes("Sorrow", i, j, blendshapes);
+            } else if (strcmp(target_name, "mouthFrownRight") == 0) {
+                vrm0_store_blendshapes("Sorrow", i, j, blendshapes);
             }
         }
     }
