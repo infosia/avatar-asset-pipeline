@@ -170,7 +170,7 @@ int main(int argc, char** argv)
     CLI::App app { "avatar-build: Run avatar asset pipeline" };
 
     std::string config = "pipelines/config.json";
-    app.add_option("-c,--config", config, "Pipeline configuration file name (JSON)");
+    app.add_option("-p,--pipeline", config, "Pipeline configuration file name (JSON)");
 
     bool verbose = false;
     app.add_flag("-v,--verbose", verbose, "Verbose log output");
