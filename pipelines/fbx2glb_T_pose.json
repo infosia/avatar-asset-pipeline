@@ -11,7 +11,6 @@
     {
       "name":"gltf_pipeline",
       "components":[
-        "glb_transforms_apply",
         "glb_T_pose"
       ]
     }

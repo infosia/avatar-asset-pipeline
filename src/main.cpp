@@ -25,7 +25,11 @@
 #include <string>
 #include <vector>
 
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 #define STB_LEAKCHECK_IMPLEMENTATION
+#include "stb_image.h"
+#include "stb_image_write.h"
 #include "stb_leakcheck.h"
 
 #include "CLI11.hpp"
@@ -45,6 +49,7 @@
 #include "vrm0_func.inl"
 
 #include "glb_T_pose.hpp"
+#include "glb_jpeg_to_png.hpp"
 #include "glb_transforms_apply.hpp"
 #include "glb_z_reverse.hpp"
 #include "vrm0_fix_joint_buffer.hpp"
@@ -65,6 +70,8 @@ static std::shared_ptr<DSPatch::Component> create_component(std::string name, cm
         return std::make_shared<DSPatch::glb_z_reverse>(options);
     } else if (name == "glb_transforms_apply") {
         return std::make_shared<DSPatch::glb_transforms_apply>(options);
+    } else if (name == "glb_jpeg_to_png") {
+        return std::make_shared<DSPatch::glb_jpeg_to_png>(options);
     } else if (name == "glb_T_pose") {
         return std::make_shared<DSPatch::glb_T_pose>(options);
     } else if (name == "vrm0_fix_joint_buffer") {

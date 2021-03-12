@@ -20,13 +20,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#include <codecvt>
 #include <fstream>
 #include <iostream>
 #include <set>
 #include <sstream>
 #include <string>
 #include <unordered_map>
-#include <codecvt>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_SILENT_WARNINGS
@@ -36,7 +36,7 @@
 
 static bool gltf_leackcheck_enabled = false; // cheating
 
-#define gltf_calloc(N,SIZE) (gltf_leackcheck_enabled ? stb_leakcheck_calloc(N * SIZE, __FILE__, __LINE__) : calloc(N, SIZE))
+#define gltf_calloc(N, SIZE) (gltf_leackcheck_enabled ? stb_leakcheck_calloc(N * SIZE, __FILE__, __LINE__) : calloc(N, SIZE))
 #define gltf_free(P) (gltf_leackcheck_enabled ? stb_leakcheck_free(P) : free(P))
 
 static void* gltf_leakcheck_malloc(void* user, cgltf_size size)
@@ -53,7 +53,7 @@ static void gltf_leackcheck_free(void* user, void* ptr)
 
 static char* gltf_alloc_chars(const char* str)
 {
-    if (str == nullptr) 
+    if (str == nullptr)
         return nullptr;
 
     const auto length = strlen(str);
@@ -82,20 +82,17 @@ static cgltf_result gltf_wstring_file_read(const struct cgltf_memory_options* me
 
     FILE* file = _wfopen(path.c_str(), L"rb");
 
-    if (!file)
-    {
+    if (!file) {
         return cgltf_result_file_not_found;
     }
 
     cgltf_size file_size = size ? *size : 0;
 
-    if (file_size == 0)
-    {
+    if (file_size == 0) {
         fseek(file, 0, SEEK_END);
 
         long length = ftell(file);
-        if (length < 0)
-        {
+        if (length < 0) {
             fclose(file);
             return cgltf_result_io_error;
         }
@@ -105,8 +102,7 @@ static cgltf_result gltf_wstring_file_read(const struct cgltf_memory_options* me
     }
 
     char* file_data = (char*)memory_alloc(memory_options->user_data, file_size);
-    if (!file_data)
-    {
+    if (!file_data) {
         fclose(file);
         return cgltf_result_out_of_memory;
     }
@@ -115,18 +111,15 @@ static cgltf_result gltf_wstring_file_read(const struct cgltf_memory_options* me
 
     fclose(file);
 
-    if (read_size != file_size)
-    {
+    if (read_size != file_size) {
         memory_free(memory_options->user_data, file_data);
         return cgltf_result_io_error;
     }
 
-    if (size)
-    {
+    if (size) {
         *size = file_size;
     }
-    if (data)
-    {
+    if (data) {
         *data = file_data;
     }
 
@@ -185,6 +178,48 @@ static bool gltf_update_joint_buffer(cgltf_accessor* joints)
     return true;
 }
 
+static bool gltf_create_buffer(cgltf_data* data)
+{
+    const auto buffer = &data->buffers[0];
+
+    cgltf_size total_size = 0;
+    for (cgltf_size j = 0; j < data->buffer_views_count; ++j) {
+        total_size += (data->buffer_views[j].size + 3) & ~3;
+    }
+
+    auto buffer_data = (uint8_t*)gltf_calloc(total_size, sizeof(uint8_t)); // will be freed at cgltf_free()
+    if (buffer_data == nullptr)
+        return false;
+
+    auto buffer_dst = buffer_data;
+    for (cgltf_size j = 0; j < data->buffer_views_count; ++j) {
+        const auto buffer_view = &data->buffer_views[j];
+        const auto size_to_copy = buffer_view->size;
+        if (buffer_view->data != nullptr) {
+            memcpy_s(buffer_dst, size_to_copy, buffer_view->data, size_to_copy);
+        } else {
+            memcpy_s(buffer_dst, size_to_copy, ((uint8_t*)buffer_view->buffer->data + buffer_view->offset), size_to_copy);
+        }
+        buffer_view->offset = (buffer_dst - buffer_data);
+        buffer_dst += (size_to_copy + 3) & ~3;
+
+        if (buffer_view->data != nullptr) {
+            gltf_free(buffer_view->data);
+            buffer_view->data = nullptr;
+        }
+    }
+
+    // check if buffer has been updated from original, need to free in that case
+    if (buffer->data != data->bin) {
+        gltf_free(buffer->data);
+    }
+
+    buffer->size = total_size;
+    buffer->data = buffer_data;
+
+    return true;
+}
+
 static bool gltf_upcast_joints(cgltf_data* data)
 {
     std::set<cgltf_accessor*> accessor_coord_done;
@@ -212,36 +247,7 @@ static bool gltf_upcast_joints(cgltf_data* data)
         }
     }
 
-    const auto buffer = &data->buffers[0];
-
-    cgltf_size total_size = 0;
-    for (cgltf_size j = 0; j < data->buffer_views_count; ++j) {
-        total_size += (data->buffer_views[j].size + 3) & ~3;
-    }
-
-    auto buffer_data = (uint8_t*)gltf_calloc(total_size, sizeof(uint8_t)); // will be freed at cgltf_free()
-    auto buffer_dst = buffer_data;
-    for (cgltf_size j = 0; j < data->buffer_views_count; ++j) {
-        const auto buffer_view = &data->buffer_views[j];
-        const auto size_to_copy = buffer_view->size;
-        if (buffer_view->data != nullptr) {
-            memcpy_s(buffer_dst, size_to_copy, buffer_view->data, size_to_copy);
-        } else {
-            memcpy_s(buffer_dst, size_to_copy, ((uint8_t*)buffer_view->buffer->data + buffer_view->offset), size_to_copy);
-        }
-        buffer_view->offset = (buffer_dst - buffer_data);
-        buffer_dst += (size_to_copy + 3) & ~3;
-
-        if (buffer_view->data != nullptr) {
-            data->memory.free(data->memory.user_data, buffer_view->data);
-            buffer_view->data = nullptr;
-        }
-    }
-
-    buffer->size = total_size;
-    buffer->data = buffer_data;
-
-    return true;
+    return gltf_create_buffer(data);
 }
 
 static void gltf_reverse_z_accessor(cgltf_accessor* accessor)
@@ -765,4 +771,54 @@ static void gltf_update_inverse_bind_matrices(cgltf_data* data)
             gltf_f3_min(inverse_bind_matrix + 12, accessor->min, accessor->min);
         }
     }
+}
+
+static bool gltf_is_mimetype_jpeg(const char* mime_type)
+{
+    if (mime_type == nullptr)
+        return false;
+
+    if (strcmp(mime_type, "image/jpg") == 0 || strcmp(mime_type, "image/jpeg") == 0
+        || strcmp(mime_type, "image\\/jpeg") == 0 || strcmp(mime_type, "image\\/jpg") == 0) {
+        return true;
+    }
+    return false;
+}
+
+static void gltf_png_write_func(void* context, void* buffer, int size)
+{
+    cgltf_image* image = (cgltf_image*)context;
+
+    // check if buffer data has been updated. need to free in that case
+    if (image->buffer_view->data != nullptr)
+        gltf_free(image->buffer_view->data);
+
+    uint8_t* buffer_dst = (uint8_t*)gltf_calloc(1, size);
+    memcpy_s(buffer_dst, size, buffer, size);
+
+    image->buffer_view->data = buffer_dst;
+    image->buffer_view->size = size;
+}
+
+static bool gltf_images_jpg_to_png(cgltf_data* data)
+{
+    for (cgltf_size i = 0; i < data->images_count; ++i) {
+        const auto image = &data->images[i];
+        if (!gltf_is_mimetype_jpeg(image->mime_type))
+            continue;
+
+        const auto buffer = ((uint8_t*)image->buffer_view->buffer->data + image->buffer_view->offset);
+        int x, y, n;
+        const auto image_data = stbi_load_from_memory(buffer, (int)image->buffer_view->size, &x, &y, &n, 0);
+        stbi_write_png_to_func(gltf_png_write_func, image, x, y, n, image_data, 0);
+        stbi_image_free(image_data); // safe to free here because buffer has been already copied to image buffer
+
+        // assign new mime type
+        gltf_free(image->mime_type);
+        image->mime_type = gltf_alloc_chars("image\\/png");
+    }
+
+    gltf_create_buffer(data);
+
+    return true;
 }

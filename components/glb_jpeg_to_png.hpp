@@ -22,16 +22,16 @@
  */
 #pragma once
 
-#include <iostream>
 #include "DSPatch.h"
 #include "pipelines.hpp"
+#include <iostream>
 
 namespace DSPatch {
 
-class glb_T_pose final : public Component {
+class glb_jpeg_to_png final : public Component {
 
 public:
-    glb_T_pose(AvatarBuild::cmd_options* options)
+    glb_jpeg_to_png(AvatarBuild::cmd_options* options)
         : Component()
         , options(options)
     {
@@ -39,7 +39,7 @@ public:
         SetOutputCount_(3);
     }
 
-    virtual ~glb_T_pose()
+    virtual ~glb_jpeg_to_png()
     {
     }
 
@@ -52,28 +52,25 @@ protected:
             Reset();
             return;
         }
-
-        AVATAR_COMPONENT_LOG("[INFO] glb_T_pose");
+        AVATAR_COMPONENT_LOG("[INFO] glb_jpeg_to_png");
 
         const auto data_ptr = inputs.GetValue<cgltf_data*>(1);
         const auto bones_ptr = inputs.GetValue<AvatarBuild::bone_mappings*>(2);
 
         if (data_ptr && bones_ptr) {
             cgltf_data* data = *data_ptr;
-            AvatarBuild::bone_mappings* mappings = *bones_ptr;
-            if (gltf_apply_pose("T", mappings)) {
-                gltf_skinning(data);
-                gltf_update_inverse_bind_matrices(data);
-                gltf_remove_animation(data); // pose change does not work well with animation
-                outputs.SetValue(0, false); // discarded
+
+            if (gltf_images_jpg_to_png(data)) {
+                outputs.SetValue(0, false);    // discarded
             } else {
-                AVATAR_COMPONENT_LOG("[ERROR] glb_T_pose: `T` pose is not found");
-                outputs.SetValue(0, true); // discarded
+                AVATAR_COMPONENT_LOG("[ERROR] glb_jpeg_to_png: failed to convert jpeg to png");
+                outputs.SetValue(0, true);    // discarded
             }
-            outputs.SetValue(1, data);  // data
-            outputs.SetValue(2, *bones_ptr);  // bone_mappings
+
+            outputs.SetValue(1, data);
+            outputs.SetValue(2, *bones_ptr);
         } else {
-            AVATAR_COMPONENT_LOG("[ERROR] glb_T_pose: inputs not found");
+            AVATAR_COMPONENT_LOG("[ERROR] glb_jpeg_to_png: inputs not found");
             outputs.SetValue(0, true);    // discarded
         }
     }
