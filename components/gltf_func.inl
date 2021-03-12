@@ -37,15 +37,7 @@
 static bool gltf_leackcheck_enabled = false; // cheating
 
 #define gltf_calloc(N,SIZE) (gltf_leackcheck_enabled ? stb_leakcheck_calloc(N * SIZE, __FILE__, __LINE__) : calloc(N, SIZE))
-
-static void gltf_free(void*ptr)
-{
-    if (gltf_leackcheck_enabled) {
-        return stb_leakcheck_free(ptr);
-    } else {
-        return free(ptr);
-    }
-}
+#define gltf_free(P) (gltf_leackcheck_enabled ? stb_leakcheck_free(P) : free(P))
 
 static void* gltf_leakcheck_malloc(void* user, cgltf_size size)
 {
