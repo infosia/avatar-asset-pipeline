@@ -115,7 +115,7 @@ avatar asset pipeline follows Blender-like naming conversions in order to search
 
 <sub>https://docs.blender.org/manual/en/latest/animation/armatures/bones/editing/naming.html</sub>
 
-Still, you can explicitly specify bone naming conversions by using `--bone` option such as `--bone models/input.mixamo.bones.json`. Checkout `models/*.bones.json` for commonly used bone naming conversions.
+You can explicitly specify bone naming conversions by using `--input_config` option such as `--input_config models/input.mixamo.json`. Checkout `models/input.*.json` for commonly used bone naming conversions.
 
 ```js
 {
@@ -147,7 +147,7 @@ Still, you can explicitly specify bone naming conversions by using `--bone` opti
 Check out `pipelines` directory for working pipeline examples in practice.
 
 ```
-> avatar-build -c pipelines/glb2vrm0_T_pose.json --debug --output_config models/output.vrm0.json -v --fbx2gltf extern/fbx2gltf.exe --input_config models/input.readyplayerme.bones.json -i ../models/readyplayerme-feminine.glb -o ../models/readyplayerme-feminine.vrm
+> avatar-build -c pipelines/glb2vrm0_T_pose.json --debug --output_config models/output.vrm0.json -v --fbx2gltf extern/fbx2gltf.exe --input_config models/input.readyplayerme.json -i ../models/readyplayerme-feminine.glb -o ../models/readyplayerme-feminine.vrm
 ```
 
 ## Options
