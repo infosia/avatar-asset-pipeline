@@ -25,6 +25,13 @@
       }
     }
   },
+  "firstPerson": {
+    "firstPersonBoneOffset": {
+      "x": 0,
+      "y": 0.1,
+      "z": 0
+    }
+  },
   "bones":{
     "hips":"Hips",
     "leftUpperLeg":"LeftUpLeg",

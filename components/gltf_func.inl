@@ -810,7 +810,7 @@ static bool gltf_images_jpg_to_png(cgltf_data* data)
         const auto buffer = ((uint8_t*)image->buffer_view->buffer->data + image->buffer_view->offset);
         int x, y, n;
         const auto image_data = stbi_load_from_memory(buffer, (int)image->buffer_view->size, &x, &y, &n, 0);
-        stbi_write_png_to_func(gltf_png_write_func, image, x, y, n, image_data, 0);
+        stbi_write_png_to_func(gltf_png_write_func, image, x, y, n, image_data, x * n);
         stbi_image_free(image_data); // safe to free here because buffer has been already copied to image buffer
 
         // assign new mime type
