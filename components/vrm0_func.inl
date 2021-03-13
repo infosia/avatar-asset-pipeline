@@ -156,7 +156,7 @@ static void vrm0_ensure_mapProperties(const json& materialProperties_object, cgl
     }
 }
 
-static void vrm0_ensure_defaults(const json& materialProperties_object, cgltf_data* data)
+static void vrm0_ensure_defaults(const json& output_config_object, cgltf_data* data)
 {
     data->has_vrm_v0_0 = true;
 
@@ -184,6 +184,19 @@ static void vrm0_ensure_defaults(const json& materialProperties_object, cgltf_da
     if (vrm->firstPerson.firstPersonBoneOffset_count == 0) {
         vrm->firstPerson.firstPersonBoneOffset_count = 3;
         vrm->firstPerson.firstPersonBoneOffset = (cgltf_float*)gltf_calloc(3, sizeof(cgltf_float));
+        auto firstPerson_object = output_config_object["firstPerson"];
+        if (firstPerson_object.is_object() && firstPerson_object["firstPersonBoneOffset"].is_object()) {
+            auto firstPersonBoneOffset = firstPerson_object["firstPersonBoneOffset"];
+            if (firstPersonBoneOffset["x"].is_number()) {
+                vrm->firstPerson.firstPersonBoneOffset[0] = firstPersonBoneOffset["x"].get<float>();            
+            }
+            if (firstPersonBoneOffset["y"].is_number()) {
+                vrm->firstPerson.firstPersonBoneOffset[1] = firstPersonBoneOffset["y"].get<float>();            
+            }
+            if (firstPersonBoneOffset["z"].is_number()) {
+                vrm->firstPerson.firstPersonBoneOffset[2] = firstPersonBoneOffset["z"].get<float>();            
+            }
+        }
     }
 
     // materials
@@ -194,6 +207,7 @@ static void vrm0_ensure_defaults(const json& materialProperties_object, cgltf_da
             vrm->materialProperties[i].name = gltf_alloc_chars(data->materials[i].name);
             vrm->materialProperties[i].renderQueue = 2000;
 
+            auto materialProperties_object = output_config_object["materialProperties"];
             if (materialProperties_object.is_object() && materialProperties_object["default"].is_object()) {
 
                 auto props_default = materialProperties_object["default"];
