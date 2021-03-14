@@ -1,0 +1,1 @@
+* Ready Player Me full-body avatar is licensed under [Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/) by [Wolf3D](https://wolf3d.io/).
