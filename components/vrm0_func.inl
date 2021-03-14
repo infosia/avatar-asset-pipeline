@@ -199,6 +199,14 @@ static void vrm0_ensure_defaults(const json& output_config_object, cgltf_data* d
         }
     }
 
+    // Disable mipmap setup (because it did not work with VRoid Hub)
+    for (cgltf_size i = 0; i < data->samplers_count; ++i) {
+        const auto sampler = &data->samplers[i];
+        if (sampler->min_filter >= 9984) {
+            sampler->min_filter = sampler->mag_filter;
+        }
+    }
+
     // materials
     if (vrm->materialProperties_count == 0) {
         vrm->materialProperties_count = data->materials_count;
