@@ -2,7 +2,7 @@
 
 Avatar asset pipeline is a tool to create continuous integration build pipelines for avatar development using set of common transformation logic as a components, such as "A-pose to T-pose". The build pipelines are defined in a declarative way using JSON file.
 
-**[Work In Progress]**
+**[[[Work In Progress]]]**
 
 ## Background
 
@@ -45,6 +45,8 @@ Avatar asset pipeline is aiming to help common workflows for both 3D artist and 
 
 ## Common transformations for VRM
 
+### Convert A-pose to T-pose glTF binary (.glb) to VRM spec 0.0
+
 ```json
 {
   "name":"glb2vrm0_T_pose",
@@ -56,6 +58,29 @@ Avatar asset pipeline is aiming to help common workflows for both 3D artist and 
         "glb_T_pose",
         "glb_transforms_apply",
         "glb_z_reverse",
+        "vrm0_fix_joint_buffer",
+        "vrm0_default_extensions"
+      ]
+    }
+  ]
+}
+```
+
+### Convert glTF binary (.glb) to VRM spec 0.0, forcing all jpeg textures to png
+
+This has been needed to support platforms that do not have jpeg textures such as [Cluster](https://cluster.mu/en/).
+
+```json
+{
+  "name":"glb2vrm0",
+  "description":"Convert glTF binary (.glb) to VRM spec 0.0, forcing all jpeg textures to png",
+  "pipelines":[
+    {
+      "name":"gltf_pipeline",
+      "components":[
+        "glb_transforms_apply",
+        "glb_z_reverse",
+        "glb_jpeg_to_png",
         "vrm0_fix_joint_buffer",
         "vrm0_default_extensions"
       ]
