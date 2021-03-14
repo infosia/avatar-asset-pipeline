@@ -71,7 +71,7 @@ Avatar asset pipeline is aiming to help common workflows for both 3D artist and 
 ```js
 {
   "name":"fbx2glb_tpose",
-  "description":"Convert FBX to glTF binary (.glb) and make it T-pose",
+  "description":"Convert FBX to glTF binary (.glb), make it T-pose and then VRM 0.0",
   "pipelines":[
     {
       "name":"fbx_pipeline",
@@ -82,7 +82,11 @@ Avatar asset pipeline is aiming to help common workflows for both 3D artist and 
     {
       "name":"gltf_pipeline",
       "components":[
-        "glb_T_pose"
+        "glb_T_pose",
+        "glb_transforms_apply",
+        "glb_z_reverse",
+        "vrm0_fix_joint_buffer",
+        "vrm0_default_extensions"
       ]
     }
   ]
