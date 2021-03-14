@@ -45,7 +45,7 @@ Avatar asset pipeline is aiming to help common workflows for both 3D artist and 
 
 ## Common transformations for VRM
 
-### Convert A-pose to T-pose glTF binary (.glb) to VRM spec 0.0
+### Convert A-pose to T-pose, glTF binary (.glb) to VRM spec 0.0
 
 ```json
 {
@@ -68,7 +68,7 @@ Avatar asset pipeline is aiming to help common workflows for both 3D artist and 
 
 ### Convert glTF binary (.glb) to VRM spec 0.0, forcing all jpeg textures to png
 
-This has been needed to support platforms that do not have jpeg textures such as [Cluster](https://cluster.mu/en/).
+This has been needed to support platforms that do not enable jpeg texture such as [Cluster](https://cluster.mu/en/).
 
 ```json
 {
