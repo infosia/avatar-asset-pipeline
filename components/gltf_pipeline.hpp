@@ -105,6 +105,8 @@ protected:
             return;
         }
 
+        outputs.SetValue(0, true); // discarded
+
         const std::string input = options->input;
 
         AVATAR_PIPELINE_LOG("[INFO] gltf_pipeline start");
@@ -132,7 +134,6 @@ protected:
         try {
             circuit->Tick(DSPatch::Component::TickMode::Series);
             discarded = tick_result->is_discarded();
-            outputs.SetValue(0, discarded);
         } catch (json::exception e) {
             AVATAR_PIPELINE_LOG("[ERROR] failed to parse JSON: " << e.what());                
             discarded = true;
@@ -163,6 +164,8 @@ protected:
         cgltf_free(data);
         glb_loader->set_data(nullptr);
         data = nullptr;
+
+        outputs.SetValue(0, discarded);
 
         if (!discarded) {
             AVATAR_PIPELINE_LOG("[INFO] gltf_pipeline finished without errors");

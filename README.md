@@ -1,4 +1,4 @@
-# :diamond_shape_with_a_dot_inside: avatar-asset-pipeline
+# :diamond_shape_with_a_dot_inside: avatar-asset-pipeline [![Actions Status](https://github.com/infosia/avatar-asset-pipeline/workflows/build/badge.svg)](https://github.com/infosia/avatar-asset-pipeline/actions) ![MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 
 Avatar asset pipeline is a tool to create continuous integration build pipelines for avatar development using set of common transformation logic as a components, such as "A-pose to T-pose". The build pipelines are defined in a declarative way using JSON file.
 
