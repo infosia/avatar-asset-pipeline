@@ -84,6 +84,8 @@ public:
 
     virtual void wire_components() override
     {
+        pipeline_processor::wire_components();
+
         glb_loader = std::make_shared<glb_load>(options);
         circuit->AddComponent(glb_loader);
 
@@ -100,7 +102,6 @@ protected:
         // just return immediately when there's critical error in previous component
         const auto inputs0 = inputs.GetValue<bool>(0);
         if (inputs0 && *inputs0) {
-            Reset();
             return;
         }
 

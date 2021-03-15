@@ -48,7 +48,6 @@ protected:
         // just return immediately when there's critical error in previous component
         const auto discarded = inputs.GetValue<bool>(0);
         if (discarded && *discarded) {
-            Reset();
             return;
         }
         AVATAR_COMPONENT_LOG("[INFO] vrm0_fix_joint_buffer");

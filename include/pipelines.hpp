@@ -101,7 +101,6 @@ public:
         , circuit(std::make_shared<DSPatch::Circuit>())
         , tick_result(std::make_shared<components_result>())
     {
-        circuit->AddComponent(tick_result);
     }
 
     virtual ~pipeline_processor()
@@ -123,7 +122,13 @@ public:
 
     virtual void wire_components()
     {
-        // nothing to do
+        circuit->AddComponent(tick_result);
+        circuit->ConnectOutToIn(components.back(), 0, tick_result, 0); // <bool>  discarded
+    }
+
+    bool is_discarded() 
+    {
+        return tick_result->is_discarded();
     }
 
 protected:

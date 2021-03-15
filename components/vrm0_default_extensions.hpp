@@ -48,14 +48,12 @@ protected:
         // just return immediately when there's critical error in previous component
         const auto discarded = inputs.GetValue<bool>(0);
         if (discarded && *discarded) {
-            Reset();
             return;
         }
 
         if (options->output_config.empty()) {
             AVATAR_COMPONENT_LOG("[ERROR] VRM config file is not specified. Use --vrm0 [file] option to specify VRM config");
             outputs.SetValue(0, true);    // discarded
-            Reset();
             return;
         }
 
@@ -69,13 +67,16 @@ protected:
             AvatarBuild::bone_mappings* mappings = *bones_ptr;
 
             json vrm0_config;
-            json_parse(options->output_config, &vrm0_config);
+            if (json_parse(options->output_config, &vrm0_config)) {
+                vrm0_update_bones(mappings, data);
+                vrm0_update_meta(vrm0_config["meta"], &data->vrm_v0_0);
+                vrm0_ensure_defaults(vrm0_config, data);
 
-            vrm0_update_bones(mappings, data);
-            vrm0_update_meta(vrm0_config["meta"], &data->vrm_v0_0);
-            vrm0_ensure_defaults(vrm0_config, data);
+                outputs.SetValue(0, false);    // discarded
+            } else {
+                outputs.SetValue(0, true);    // discarded
+            }
 
-            outputs.SetValue(0, false);    // discarded
             outputs.SetValue(1, data);
             outputs.SetValue(2, *bones_ptr);
         } else {

@@ -94,7 +94,7 @@ static std::shared_ptr<pipeline_processor> create_pipeline(std::string name, cmd
     return std::make_shared<AvatarBuild::pipeline_processor>(name, options);
 }
 
-static std::shared_ptr<DSPatch::Component> wire_pipeline(pipeline* p, cmd_options* options)
+static std::shared_ptr<pipeline_processor> wire_pipeline(pipeline* p, cmd_options* options)
 {
     const auto pipeline = create_pipeline(p->name, options);
 
@@ -117,12 +117,9 @@ static bool build_and_start_circuits(cmd_options* options, json config_json)
         }
 
         auto circuit = std::make_shared<DSPatch::Circuit>();
-        auto pipeline_count = pipelines_obj.size();
 
-        std::shared_ptr<DSPatch::Component> previous;
-        for (size_t i = 0; i < pipeline_count; ++i) {
-            const auto& obj = pipelines_obj[i];
-
+        std::vector<std::shared_ptr<pipeline_processor>> pipelines;
+        for (const auto& obj : pipelines_obj) {
             pipeline p;
             p.name = obj["name"];
             p.components = json_get_string_items("components", obj);
@@ -130,16 +127,22 @@ static bool build_and_start_circuits(cmd_options* options, json config_json)
             auto component = wire_pipeline(&p, options);
             circuit->AddComponent(component);
 
-            if (i > 0) {
-                circuit->ConnectOutToIn(previous, 0, component, 0);
+            if (!pipelines.empty()) {
+                circuit->ConnectOutToIn(pipelines.back(), 0, component, 0);
             }
 
-            previous = component;
+            pipelines.push_back(component);
         }
 
         // make sure to execute pipeline in TickMode::Series
         // because pipeline has state and not thread safe.
         circuit->Tick(DSPatch::Component::TickMode::Series);
+
+        // Check if pipeline has failure
+        for (const auto pipeline : pipelines) {
+            if (pipeline->is_discarded())
+                return false;
+        }
 
         return true;
     } catch (json::exception& e) {
@@ -220,8 +223,9 @@ int main(int argc, char** argv)
         status = 1;
     }
 
-    if (debug)
-        stb_leakcheck_dumpmem();
+    if (debug && stb_leakcheck_dumpmem()) {
+        status = 1;
+    }
 
     return status;
 }
