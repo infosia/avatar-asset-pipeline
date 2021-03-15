@@ -22,9 +22,9 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{github.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE
+      run: cmake ${{github.workspace}} -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
     - name: Build
       shell: bash
       working-directory: ${{github.workspace}}/build
-      run: msbuild /m /p:Configuration=$BUILD_TYPE avatar-asset-pipeline.sln
+      run: msbuild /m /p:Configuration=${{env.BUILD_TYPE}} avatar-asset-pipeline.sln
