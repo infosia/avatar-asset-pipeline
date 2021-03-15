@@ -23,6 +23,24 @@ Avatar asset pipeline is aiming to help common workflows for both 3D artist and 
 
 ## Common transformations in practice
 
+### Convert A-pose to T-pose glTF binary (.glb)
+
+```json
+{
+  "name":"glb_T_pose",
+  "description":"T-pose from A-pose glTF binary (.glb)",
+  "pipelines":[
+    {
+      "name":"gltf_pipeline",
+      "components":[
+        "glb_T_pose"
+      ]
+    }
+  ]
+}
+```
+
+### Convert A-pose to T-pose glTF binary (.glb) and apply all bone transforms
 
 ```json
 {
@@ -40,8 +58,22 @@ Avatar asset pipeline is aiming to help common workflows for both 3D artist and 
 }
 ```
 
+### Convert FBX to glTF binary (.glb)
 
-![figure002](docs/figure002.png)
+```json
+{
+  "name":"fbx2glb",
+  "description":"Convert FBX to glTF binary (.glb)",
+  "pipelines":[
+    {
+      "name":"fbx_pipeline",
+      "components":[
+        "fbx2gltf_execute"
+      ]
+    }
+  ]
+}
+```
 
 ## Common transformations for VRM
 
@@ -120,7 +152,7 @@ This has been needed to support platforms that do not enable jpeg texture such a
 
 ![figure003](docs/figure003.png)
 
-## Convert FBX to glTF
+## Converting FBX to glTF
 
 Conversion of FBX to glTF using `fbx_pipeline` requires [FBX2glTF executable](https://github.com/facebookincubator/FBX2glTF/releases). In order to use FBX2glTF with asset pipeline you need to specify a path to the executable using `--fbx2gltf` option such as `--fbx2gltf bin/fbx2gltf.exe`.
 
