@@ -21,6 +21,25 @@ Avatar asset pipeline is aiming to help common workflows for both 3D artist and 
 
 ![figure004](docs/figure004.png)
 
+## Usage
+
+Check out `pipelines` directory for working pipeline examples in practice.
+
+```
+> avatar-build.exe --pipeline pipelines/glb2vrm0_T_pose.json --debug --output_config models/output.vrm0.json -v --fbx2gltf extern/fbx2gltf.exe --input_config models/input.readyplayerme.json -i models/readyplayerme-feminine.glb -o models/readyplayerme-feminine.vrm
+```
+
+## Options
+
+* `--pipeline`: Pipeline configuration file name (JSON);
+* `--verbose`: verbose Verbose log output
+* `--debug`: Enable debug output (such as JSON dump)
+* `--input`: Input file name
+* `--output` "Output file name
+* `--input_config`: Input configuration file name (JSON)
+* `--output_config`: Output configuration file name (JSON)
+* `--fbx2gltf`: Path to fbx2gltf executable
+
 ## Common transformations in practice
 
 ### Convert A-pose to T-pose glTF binary (.glb)
@@ -38,9 +57,42 @@ Avatar asset pipeline is aiming to help common workflows for both 3D artist and 
     }
   ]
 }
+````
+
+```
+> avatar-build.exe --pipeline pipelines/glb_T_pose.json --debug -v --input_config models/input.readyplayerme.json -i models/readyplayerme-feminine.glb -o models/readyplayerme-feminine.Tpose.glb
+````
+
+*glb_T_pose* component can be used to change default pose. Pose configuration can be specified by input config (`--input_config`). Checkout `models/input.*.json` for commonly used configurations. Following example defines "T" pose, there are `rotation` configurations in order to make current pose to "T" pose. All rotations are quaternions and *multiplied* to current rotations when `glb_T_pose` is executed. Bone naming conventions are described in [bone naming conventions](#bone-naming-conventions) section.
+
+```js
+"poses":{
+  "T": {
+    "LeftUpperArm":  {
+      "rotation": [ -0.5, 0, 0, 0.866 ]
+    },
+    "RightUpperArm": {
+      "rotation": [ -0.5, 0, 0, 0.866 ]
+    },
+    "LeftLowerArm": {
+      "rotation": [ 0, 0, -0.128, 0.992 ]
+    },
+    "RightLowerArm": {
+      "rotation": [ 0, 0, 0.128, 0.992 ]
+    },
+    "LeftHand": {
+      "rotation": [ 0, -0.128, 0, 0.992 ]
+    },
+    "RightHand": {
+      "rotation": [ 0, 0.128, 0, 0.992 ]
+    }
+  }
+}
 ```
 
-### Convert A-pose to T-pose glTF binary (.glb) and apply all bone transforms
+### Convert A-pose to T-pose glTF binary (.glb) and apply all node transforms
+
+*glb_transforms_apply* component applies all node transforms to make sure nodes have no scale and rotation.
 
 ```json
 {
@@ -75,6 +127,10 @@ Avatar asset pipeline is aiming to help common workflows for both 3D artist and 
 }
 ```
 
+```
+> avatar-build.exe --pipeline pipelines/fbx2glb.json --debug -v --input_config models/input.mixamo.json -i models/xbot.fbx -o models/xbot.glb
+```
+
 ## Common transformations for VRM
 
 ### Convert A-pose to T-pose, glTF binary (.glb) to VRM spec 0.0
@@ -96,6 +152,10 @@ Avatar asset pipeline is aiming to help common workflows for both 3D artist and 
     }
   ]
 }
+```
+
+```
+> avatar-build.exe --pipeline pipelines/glb2vrm0_T_pose.json --debug --output_config models/output.vrm0.json -v --input_config models/input.readyplayerme.json -i models/readyplayerme-feminine.glb -o models/readyplayerme-feminine.vrm
 ```
 
 ### Convert glTF binary (.glb) to VRM spec 0.0, forcing all jpeg textures to png
@@ -158,7 +218,7 @@ Conversion of FBX to glTF using `fbx_pipeline` requires [FBX2glTF executable](ht
 
 ## Bone naming conventions
 
-avatar asset pipeline follows Blender-like naming conversions in order to search for humanoid bone retargeting.
+avatar asset pipeline assumes bone names to use [Human Body Bones](https://docs.unity3d.com/ScriptReference/HumanBodyBones.html) conventions following Blender-like naming conversions in order to search for humanoid bone retargeting.
 
 > First you should give your bones meaningful base-names, like “leg”, “arm”, “finger”, “back”, “foot”, etc.
 > If you have a bone that has a copy on the other side (a pair), like an arm, give it one of the following separators:
@@ -185,43 +245,23 @@ You can explicitly specify bone naming conversions by using `--input_config` opt
     "with_any_case": true, // case insensitive
   },
   "bones":{
-    "hips":"Hips",
-    "leftUpperLeg":"LeftUpLeg",
-    "rightUpperLeg":"RightUpLeg",
-    "leftLowerLeg":"LeftLeg",
-    "rightLowerLeg":"RightLeg",
-    "leftFoot":"LeftFoot",
-    "rightFoot":"RightFoot",
-    "spine":"Spine",
-    "chest":"Spine1",
-    "neck":"Neck",
-    "head":"Head",
-    "leftShoulder":"LeftShoulder",
-    "rightShoulder":"RightShoulder",
+    "Hips":"Hips",
+    "LeftUpperLeg":"LeftUpLeg",
+    "RightUpperLeg":"RightUpLeg",
+    "LeftLowerLeg":"LeftLeg",
+    "RightLowerLeg":"RightLeg",
+    "LeftFoot":"LeftFoot",
+    "RightFoot":"RightFoot",
+    "Spine":"Spine",
+    "Chest":"Spine1",
+    "Neck":"Neck",
+    "Head":"Head",
+    "LeftShoulder":"LeftShoulder",
+    "RightShoulder":"RightShoulder",
     ...
   }
 }
 ```
-
-## Usage
-
-Check out `pipelines` directory for working pipeline examples in practice.
-
-```
-> avatar-build --pipeline pipelines/glb2vrm0_T_pose.json --debug --output_config models/output.vrm0.json -v --fbx2gltf extern/fbx2gltf.exe --input_config models/input.readyplayerme.json -i models/readyplayerme-feminine.glb -o models/readyplayerme-feminine.vrm
-```
-
-## Options
-
-* `--pipeline`: Pipeline configuration file name (JSON);
-* `--verbose`: verbose Verbose log output
-* `--debug`: Enable debug output (such as JSON dump)
-* `--input`: Input file name
-* `--output` "Output file name
-* `--input_config`: Input configuration file name (JSON)
-* `--output_config`: Output configuration file name (JSON)
-* `--fbx2gltf`: Path to fbx2gltf executable
-
 
 ## License
 

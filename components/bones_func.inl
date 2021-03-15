@@ -65,8 +65,8 @@ static bool gltf_apply_pose(std::string name, AvatarBuild::bone_mappings* mappin
 
 static bool gltf_bone_symmetry_naming_test(const std::string& name_to_test, const std::string bone_key, const std::string& bone_name, const bool with_any_case)
 {
-    static auto right_test = verex::verex().search_one_line().start_of_line().then("right").anything();
-    static auto left_test  = verex::verex().search_one_line().start_of_line().then("left").anything();
+    static auto right_test = verex::verex().search_one_line().start_of_line().then("Right").anything();
+    static auto left_test  = verex::verex().search_one_line().start_of_line().then("Left").anything();
 
     auto re_r1 = verex::verex().search_one_line().anything().then("right").anything().then(bone_name).with_any_case(with_any_case);
     auto re_l1  = verex::verex().search_one_line().anything().then("left").anything().then(bone_name).with_any_case(with_any_case);

@@ -1,1 +1,2 @@
 * Ready Player Me full-body avatar is licensed under [Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/) by [Wolf3D](https://wolf3d.io/).
+* Mixamo models and animations are licensed under [free for unlimited commercial use](https://community.adobe.com/t5/fuse-beta/licensing-royalties-ownership-eula-and-tos-q-a/td-p/7676380?page=1) by [mixamo](https://www.mixamo.com/)
