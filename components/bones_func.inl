@@ -68,6 +68,8 @@ static bool gltf_bone_symmetry_naming_test(const std::string& name_to_test, cons
     static auto right_test = verex::verex().search_one_line().start_of_line().then("Right").anything();
     static auto left_test  = verex::verex().search_one_line().start_of_line().then("Left").anything();
 
+    auto re_same = verex::verex().search_one_line().anything().then(bone_name).with_any_case(with_any_case);
+
     auto re_r1 = verex::verex().search_one_line().anything().then("right").anything().then(bone_name).with_any_case(with_any_case);
     auto re_l1  = verex::verex().search_one_line().anything().then("left").anything().then(bone_name).with_any_case(with_any_case);
     auto re_r2 = verex::verex().search_one_line().anything().then(bone_name).anything().then("right").with_any_case(with_any_case);
@@ -79,11 +81,11 @@ static bool gltf_bone_symmetry_naming_test(const std::string& name_to_test, cons
     auto re_l4 = verex::verex().search_one_line().anything().then(bone_name).any_of("_l|\\.l|\\s+l").with_any_case(with_any_case);
 
     if (right_test.test(bone_key)) {
-        return re_r1.test(name_to_test) || re_r2.test(name_to_test) || re_r3.test(name_to_test) || re_r4.test(name_to_test);
+        return (right_test.test(bone_name) && re_same.test(name_to_test)) || re_r1.test(name_to_test) || re_r2.test(name_to_test) || re_r3.test(name_to_test) || re_r4.test(name_to_test);
     }
 
     if (left_test.test(bone_key)) {
-        return re_l1.test(name_to_test) || re_l2.test(name_to_test) || re_l3.test(name_to_test) || re_l4.test(name_to_test);
+        return (left_test.test(bone_name) && re_same.test(name_to_test)) || re_l1.test(name_to_test) || re_l2.test(name_to_test) || re_l3.test(name_to_test) || re_l4.test(name_to_test);
     }
 
     return true;
