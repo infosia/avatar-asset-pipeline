@@ -158,7 +158,7 @@ static void vrm0_ensure_mapProperties(const json& materialProperties_object, cgl
 
 static void vrm0_ensure_defaults(const json& output_config_object, cgltf_data* data)
 {
-    data->has_vrm_v0_0 = true;
+    data->has_vrm_v0_0 = 1;
 
     const auto vrm = &data->vrm_v0_0;
     vrm->exporterVersion = gltf_alloc_chars("cgltf+vrm 1.9");

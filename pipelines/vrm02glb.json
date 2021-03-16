@@ -1,0 +1,13 @@
+{
+  "name":"vrm02glb",
+  "description":"Convert VRM spec 0.0 to glTF binary (.glb)",
+  "pipelines":[
+    {
+      "name":"gltf_pipeline",
+      "components":[
+        "glb_z_reverse",
+        "vrm0_remove_extensions"
+      ]
+    }
+  ]
+}

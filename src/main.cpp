@@ -54,6 +54,7 @@
 #include "glb_z_reverse.hpp"
 #include "vrm0_fix_joint_buffer.hpp"
 #include "vrm0_default_extensions.hpp"
+#include "vrm0_remove_extensions.hpp"
 #include "gltf_pipeline.hpp"
 #include "noop.hpp"
 
@@ -78,6 +79,8 @@ static std::shared_ptr<DSPatch::Component> create_component(std::string name, cm
         return std::make_shared<DSPatch::vrm0_fix_joint_buffer>(options);
     } else if (name == "vrm0_default_extensions") {
         return std::make_shared<DSPatch::vrm0_default_extensions>(options);
+    } else if (name == "vrm0_remove_extensions") {
+        return std::make_shared<DSPatch::vrm0_remove_extensions>(options);
     } else if (name == "fbx2gltf_execute") {
         return std::make_shared<DSPatch::fbx2gltf_execute>(options);
     }
