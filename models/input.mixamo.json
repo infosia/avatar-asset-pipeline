@@ -1,7 +1,7 @@
 {
   "config":{
     "pattern_match": true,
-    "with_any_case": true,
+    "with_any_case": true
   },
   "bones":{
     "Hips":"Hips",

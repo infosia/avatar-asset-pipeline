@@ -149,9 +149,25 @@ static void gltf_f3_max(cgltf_float* a, cgltf_float* b, cgltf_float* out)
 static bool gltf_remove_animation(cgltf_data* data)
 {
     if (data->animations_count > 0) {
+        for (cgltf_size i = 0; i < data->animations_count; ++i) {
+            data->memory.free(data->memory.user_data, data->animations[i].name);
+            for (cgltf_size j = 0; j < data->animations[i].samplers_count; ++j) {
+                cgltf_free_extensions(data, data->animations[i].samplers[j].extensions, data->animations[i].samplers[j].extensions_count);
+            }
+            data->memory.free(data->memory.user_data, data->animations[i].samplers);
+
+            for (cgltf_size j = 0; j < data->animations[i].channels_count; ++j) {
+                cgltf_free_extensions(data, data->animations[i].channels[j].extensions, data->animations[i].channels[j].extensions_count);
+            }
+            data->memory.free(data->memory.user_data, data->animations[i].channels);
+
+            cgltf_free_extensions(data, data->animations[i].extensions, data->animations[i].extensions_count);
+        }
         data->memory.free(data->memory.user_data, data->animations);
-        data->animations_count = 0;
+
         data->animations = nullptr;
+        data->animations_count = 0;
+
         return true;
     }
     return false;
