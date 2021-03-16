@@ -309,13 +309,13 @@ static void vrm0_ensure_defaults(const json& output_config_object, cgltf_data* d
 
             auto parent = joint->parent;
             bool found = false;
-            while (parent != nullptr) {
+            GLTF_PARENT_LOOP_BEGIN (parent != nullptr)
                 if (skin->skeleton == parent) {
                     found = true;
                     break;
                 }
                 parent = parent->parent;
-            }
+            GLTF_PARENT_LOOP_END
             // SKIN_SKELETON_INVALID: Skeleton node is not a common root
             if (!found) {
                 skin->skeleton = nullptr;

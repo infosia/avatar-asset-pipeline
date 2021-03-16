@@ -34,6 +34,10 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
+// avoid infinite loop on node tree traversal
+#define GLTF_PARENT_LOOP_BEGIN(CONDITION) { std::uint16_t COUNTER=0; while (CONDITION) { ++COUNTER; if (COUNTER > 256) {std::cout << "[WARNING] infinite loop detected" << std::endl; break;}
+#define GLTF_PARENT_LOOP_END }}
+
 static bool gltf_leackcheck_enabled = false; // cheating
 
 #define gltf_calloc(N, SIZE) (gltf_leackcheck_enabled ? stb_leakcheck_calloc(N * SIZE, __FILE__, __LINE__) : calloc(N, SIZE))
@@ -480,10 +484,10 @@ static glm::mat4 gltf_get_global_node_transform(const cgltf_node* node)
 {
     auto m = gltf_get_node_transform(node);
     cgltf_node* parent = node->parent;
-    while (parent != nullptr) {
+    GLTF_PARENT_LOOP_BEGIN (parent != nullptr)
         m = gltf_get_node_transform(parent) * m;
         parent = parent->parent;
-    }
+    GLTF_PARENT_LOOP_END
 
     return m;
 }
@@ -738,7 +742,7 @@ static void gltf_apply_transforms(cgltf_data* data, std::unordered_map<std::stri
         const auto bone_hips = hips_found->second;
         glm::vec3 offset_translation = { 0, 0, 0 };
         auto node = bone_hips->parent;
-        while (node != nullptr) {
+        GLTF_PARENT_LOOP_BEGIN (node != nullptr)
             offset_translation.x += node->translation[0];
             offset_translation.y += node->translation[1];
             offset_translation.z += node->translation[2];
@@ -747,7 +751,7 @@ static void gltf_apply_transforms(cgltf_data* data, std::unordered_map<std::stri
             node->translation[1] = 0;
             node->translation[2] = 0;
             node = node->parent;
-        }
+        GLTF_PARENT_LOOP_END
         bone_hips->translation[0] += offset_translation.x;
         bone_hips->translation[1] += offset_translation.y;
         bone_hips->translation[2] += offset_translation.z;
