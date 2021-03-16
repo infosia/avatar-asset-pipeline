@@ -399,10 +399,15 @@ static bool vrm0_update_bones(AvatarBuild::bone_mappings* mappings, cgltf_data* 
 
         const auto found = mappings->node_index_map.find(node->name);
         if (found != mappings->node_index_map.end()) {
-            dst->node = found->second;
-            select_cgltf_vrm_humanoid_bone_bone_v0_0(bone_name.c_str(), &dst->bone);
 
-            if (bone_name == "head") {
+            // VRM uses lower camel case
+            auto bone_name_lower = bone_name;
+            bone_name_lower[0] = (unsigned char)std::tolower(bone_name_lower[0]);
+
+            dst->node = found->second;
+            select_cgltf_vrm_humanoid_bone_bone_v0_0(bone_name_lower.c_str(), &dst->bone);
+
+            if (bone_name == "Head") {
                 vrm->firstPerson.firstPersonBone = found->second;
             }
         } else {
