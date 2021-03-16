@@ -86,7 +86,7 @@ static bool gltf_bone_symmetry_naming_test(const std::string& name_to_test, cons
         return re_l1.test(name_to_test) || re_l2.test(name_to_test) || re_l3.test(name_to_test) || re_l4.test(name_to_test);
     }
 
-    return false;
+    return true;
 }
 
 static void gltf_parse_bones_to_node(json input, cgltf_data* data, AvatarBuild::bone_mappings* mappings)

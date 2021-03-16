@@ -188,13 +188,13 @@ static void vrm0_ensure_defaults(const json& output_config_object, cgltf_data* d
         if (firstPerson_object.is_object() && firstPerson_object["firstPersonBoneOffset"].is_object()) {
             auto firstPersonBoneOffset = firstPerson_object["firstPersonBoneOffset"];
             if (firstPersonBoneOffset["x"].is_number()) {
-                vrm->firstPerson.firstPersonBoneOffset[0] = firstPersonBoneOffset["x"].get<float>();            
+                vrm->firstPerson.firstPersonBoneOffset[0] = firstPersonBoneOffset["x"].get<float>();
             }
             if (firstPersonBoneOffset["y"].is_number()) {
-                vrm->firstPerson.firstPersonBoneOffset[1] = firstPersonBoneOffset["y"].get<float>();            
+                vrm->firstPerson.firstPersonBoneOffset[1] = firstPersonBoneOffset["y"].get<float>();
             }
             if (firstPersonBoneOffset["z"].is_number()) {
-                vrm->firstPerson.firstPersonBoneOffset[2] = firstPersonBoneOffset["z"].get<float>();            
+                vrm->firstPerson.firstPersonBoneOffset[2] = firstPersonBoneOffset["z"].get<float>();
             }
         }
     }
@@ -292,6 +292,36 @@ static void vrm0_ensure_defaults(const json& output_config_object, cgltf_data* d
             nullptr, 0, false
         };
         index++;
+    }
+
+    // check if skeleton is common root of joints
+    for (cgltf_size i = 0; i < data->skins_count; ++i) {
+        const auto skin = &data->skins[i];
+        if (skin->skeleton == nullptr)
+            continue;
+
+        for (cgltf_size j = 0; j < skin->joints_count; ++j) {
+            const auto joint = skin->joints[j];
+
+            // it's ok to point to joint itself
+            if (skin->skeleton == joint) 
+                continue;
+
+            auto parent = joint->parent;
+            bool found = false;
+            while (parent != nullptr) {
+                if (skin->skeleton == parent) {
+                    found = true;
+                    break;
+                }
+                parent = parent->parent;
+            }
+            // SKIN_SKELETON_INVALID: Skeleton node is not a common root
+            if (!found) {
+                skin->skeleton = nullptr;
+                break;
+            }
+        }
     }
 }
 
