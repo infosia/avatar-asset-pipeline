@@ -21,6 +21,42 @@
  * SOFTWARE.
  */
 
+static bool vrm0_validate_node_tree(cgltf_node* node, std::set<cgltf_node*>& parents)
+{
+    if (parents.find(node) != parents.end())
+        return false;
+
+    parents.emplace(node);
+    for (cgltf_size i = 0; i < node->children_count; ++i) {
+        if (!vrm0_validate_node_tree(node->children[i], parents))
+            return false; 
+    }
+
+    return true;
+}
+
+static cgltf_result vrm0_validate(cgltf_data* data)
+{
+	// should have at least 11 mandatory bones
+	if (data->vrm_v0_0.humanoid.humanBones_count < 11)
+	{ 
+		return cgltf_result_data_too_short;
+	}
+
+    // detect wrong node tree that causes infinite loop
+    for (cgltf_size i = 0; i < data->scenes_count; ++i) {
+        const auto scene = &data->scenes[i];
+        for (cgltf_size j = 0; j < scene->nodes_count; ++j) {
+            std::set<cgltf_node*> parents;
+            if (!vrm0_validate_node_tree(scene->nodes[i], parents)) {
+                return cgltf_result_invalid_gltf;
+            }
+        }
+    }
+
+    return cgltf_result_success;
+}
+
 static bool vrm0_ensure_degreemap(cgltf_vrm_firstperson_degreemap_v0_0* degreemap)
 {
     if (degreemap->curve_count == 0) {
