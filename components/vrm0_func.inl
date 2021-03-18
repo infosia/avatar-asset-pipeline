@@ -21,6 +21,63 @@
  * SOFTWARE.
  */
 
+static bool vrm0_override_material(json& overrides, cgltf_material* material)
+{
+    for (auto item : overrides.items()) {
+        if (item.key() == "alphaMode") {
+            const auto value = item.value().get<std::string>();
+            if (value == "OPAQUE") {
+                material->alpha_mode = cgltf_alpha_mode_opaque;
+            }
+        }
+    }
+    return true;
+}
+
+static bool vrm0_override_materials(json& materials_override, cgltf_data* data)
+{
+    (void)data;
+
+    auto rules = materials_override["rules"];
+    auto overrides = materials_override["values"];
+
+    if (!rules.is_object() || !overrides.is_object())
+        return false;
+
+    for (cgltf_size i = 0; i < data->materials_count; ++i) {
+        auto material = &data->materials[i];
+        for (auto& rule : rules.items()) {
+            const auto& key = rule.key();
+            const auto& pattern = rule.value();
+            if (!pattern.is_string())
+                continue;
+
+            std::regex re(pattern.get<std::string>());
+
+            if (key == "name") {
+                if (std::regex_match(material->name, re)) {
+                    vrm0_override_material(overrides, material);
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+static bool vrm0_override_parameters(json& overrides_object, cgltf_data* data)
+{
+    (void)data, overrides_object;
+    auto materials_overrides = overrides_object["materials"];
+    if (materials_overrides.is_array()) {
+        for (auto item : materials_overrides) {
+            vrm0_override_materials(item, data);
+        }
+    }
+
+    return true;
+}
+
 static bool vrm0_validate_node_tree(cgltf_node* node, std::set<cgltf_node*>& parents)
 {
     if (parents.find(node) != parents.end())
@@ -29,7 +86,7 @@ static bool vrm0_validate_node_tree(cgltf_node* node, std::set<cgltf_node*>& par
     parents.emplace(node);
     for (cgltf_size i = 0; i < node->children_count; ++i) {
         if (!vrm0_validate_node_tree(node->children[i], parents))
-            return false; 
+            return false;
     }
 
     return true;
@@ -37,11 +94,10 @@ static bool vrm0_validate_node_tree(cgltf_node* node, std::set<cgltf_node*>& par
 
 static cgltf_result vrm0_validate(cgltf_data* data)
 {
-	// should have at least 11 mandatory bones
-	if (data->vrm_v0_0.humanoid.humanBones_count < 11)
-	{ 
-		return cgltf_result_data_too_short;
-	}
+    // should have at least 11 mandatory bones
+    if (data->vrm_v0_0.humanoid.humanBones_count < 11) {
+        return cgltf_result_data_too_short;
+    }
 
     // detect wrong node tree that causes infinite loop
     for (cgltf_size i = 0; i < data->scenes_count; ++i) {
@@ -336,17 +392,17 @@ static void vrm0_ensure_defaults(const json& output_config_object, cgltf_data* d
             const auto joint = skin->joints[j];
 
             // it's ok to point to joint itself
-            if (skin->skeleton == joint) 
+            if (skin->skeleton == joint)
                 continue;
 
             auto parent = joint->parent;
             bool found = false;
-            GLTF_PARENT_LOOP_BEGIN (parent != nullptr)
-                if (skin->skeleton == parent) {
-                    found = true;
-                    break;
-                }
-                parent = parent->parent;
+            GLTF_PARENT_LOOP_BEGIN(parent != nullptr)
+            if (skin->skeleton == parent) {
+                found = true;
+                break;
+            }
+            parent = parent->parent;
             GLTF_PARENT_LOOP_END
             // SKIN_SKELETON_INVALID: Skeleton node is not a common root
             if (!found) {

@@ -42,6 +42,13 @@
 #define CGLTF_VRM_v0_0_IMPLEMENTATION
 #include "cgltf_write.h"
 
+#pragma warning(push)
+#pragma warning(disable : 4458) // declaration of 'source' hides class member
+#include "verbalexpressions.hpp"
+#pragma warning(pop)
+
+using json = nlohmann::json;
+
 #include "pipelines.hpp"
 #include "gltf_func.inl"
 #include "json_func.inl"

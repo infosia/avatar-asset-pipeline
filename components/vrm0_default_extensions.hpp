@@ -78,6 +78,11 @@ protected:
                 vrm0_update_meta(vrm0_defaults["meta"], &data->vrm_v0_0);
                 vrm0_ensure_defaults(vrm0_defaults, data);
 
+                auto vrm0_overrides = vrm0_config["overrides"];
+                if (vrm0_overrides.is_object()) {
+                    vrm0_override_parameters(vrm0_overrides, data);
+                }
+
                 outputs.SetValue(0, false);    // discarded
             } else {
                 AVATAR_COMPONENT_LOG("[ERROR] vrm0_default_extensions: failed to get 'defaults' property in " << options->output_config);

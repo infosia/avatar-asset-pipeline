@@ -20,17 +20,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include "json.hpp"
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-#pragma warning(push)
-#pragma warning(disable : 4458) // declaration of 'source' hides class member
-#include "verbalexpressions.hpp"
-#pragma warning(pop)
-
-using json = nlohmann::json;
 
 static bool gltf_apply_pose(std::string name, AvatarBuild::bone_mappings* mappings)
 {
