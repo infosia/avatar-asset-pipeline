@@ -1,0 +1,21 @@
+{
+  "name":"fbx2vrm0",
+  "description":"Convert FBX to VRM spec 0.0",
+  "pipelines":[
+    {
+      "name":"fbx_pipeline",
+      "components":[
+        "fbx2gltf_execute"
+      ]
+    }, 
+    {
+      "name":"gltf_pipeline",
+      "components":[
+        "glb_transforms_apply",
+        "glb_z_reverse",
+        "vrm0_fix_joint_buffer",
+        "vrm0_default_extensions"
+      ]
+    }
+  ]
+}

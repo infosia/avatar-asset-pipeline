@@ -24,8 +24,10 @@
 static bool vrm0_override_material(json& overrides, cgltf_material* material)
 {
     for (auto item : overrides.items()) {
-        if (item.key() == "alphaMode") {
-            const auto value = item.value().get<std::string>();
+        const auto key = item.key();
+        const auto value_object = item.value();
+        if (item.key() == "alphaMode" && value_object.is_string()) {
+            const auto value = value_object.get<std::string>();
             if (value == "OPAQUE") {
                 material->alpha_mode = cgltf_alpha_mode_opaque;
             }
@@ -46,6 +48,7 @@ static bool vrm0_override_materials(json& materials_override, cgltf_data* data)
 
     for (cgltf_size i = 0; i < data->materials_count; ++i) {
         auto material = &data->materials[i];
+        bool maches = true; // true when all rules matched (or there's no rules found)
         for (auto& rule : rules.items()) {
             const auto& key = rule.key();
             const auto& pattern = rule.value();
@@ -55,10 +58,14 @@ static bool vrm0_override_materials(json& materials_override, cgltf_data* data)
             std::regex re(pattern.get<std::string>());
 
             if (key == "name") {
-                if (std::regex_match(material->name, re)) {
-                    vrm0_override_material(overrides, material);
+                if (!std::regex_match(material->name, re)) {
+                    maches = false;
+                    break;
                 }
             }
+        }
+        if (maches) {
+            vrm0_override_material(overrides, material);        
         }
     }
 
