@@ -67,13 +67,16 @@ protected:
             AvatarBuild::bone_mappings* mappings = *bones_ptr;
 
             json vrm0_config;
-            if (json_parse(options->output_config, &vrm0_config)) {
+            if (json_parse(options->output_config, &vrm0_config) && vrm0_config["defaults"].is_object()) {
+                auto vrm0_defaults = vrm0_config["defaults"];
+
                 vrm0_update_bones(mappings, data);
-                vrm0_update_meta(vrm0_config["meta"], &data->vrm_v0_0);
-                vrm0_ensure_defaults(vrm0_config, data);
+                vrm0_update_meta(vrm0_defaults["meta"], &data->vrm_v0_0);
+                vrm0_ensure_defaults(vrm0_defaults, data);
 
                 outputs.SetValue(0, false);    // discarded
             } else {
+                AVATAR_COMPONENT_LOG("[ERROR] vrm0_default_extensions: failed to get 'defaults' property in " << options->output_config);
                 outputs.SetValue(0, true);    // discarded
             }
 

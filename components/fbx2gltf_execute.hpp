@@ -35,6 +35,8 @@ static inline int run_fbx2gltf(AvatarBuild::cmd_options* options)
     std::vector<std::string> arguments;
 
     arguments.push_back(options->fbx2gltf);
+    arguments.push_back("--pbr-metallic-roughness");
+    arguments.push_back("--khr-materials-unlit");
     arguments.push_back("--binary");
     arguments.push_back("--input");
     arguments.push_back(options->input);
