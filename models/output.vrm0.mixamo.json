@@ -3,7 +3,7 @@
     "materials": [
       {
         "rules": {
-          "name":"(?:.+)_MAT"
+          "name":"(?:.+)(?:_MAT)(?:[1-9])?"
         },
         "values":{
           "alphaMode":"OPAQUE"
@@ -69,7 +69,6 @@
       "renderQueue":2000,
       "shader":"VRM\\/MToon",
       "tagMap":{
-        "RenderType":"Opaque"
       },
       "textureProperties":{
         

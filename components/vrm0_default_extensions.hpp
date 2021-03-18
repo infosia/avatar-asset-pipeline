@@ -74,14 +74,14 @@ protected:
             if (json_parse(options->output_config, &vrm0_config) && vrm0_config["defaults"].is_object()) {
                 auto vrm0_defaults = vrm0_config["defaults"];
 
-                vrm0_update_bones(mappings, data);
-                vrm0_update_meta(vrm0_defaults["meta"], &data->vrm_v0_0);
-                vrm0_ensure_defaults(vrm0_defaults, data);
-
                 auto vrm0_overrides = vrm0_config["overrides"];
                 if (vrm0_overrides.is_object()) {
                     vrm0_override_parameters(vrm0_overrides, data);
                 }
+
+                vrm0_update_bones(mappings, data);
+                vrm0_update_meta(vrm0_defaults["meta"], &data->vrm_v0_0);
+                vrm0_ensure_defaults(vrm0_defaults, data);
 
                 outputs.SetValue(0, false);    // discarded
             } else {
