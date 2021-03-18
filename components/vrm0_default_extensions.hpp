@@ -27,6 +27,10 @@
 
 namespace DSPatch {
 
+/// <summary>
+/// vrm0_default_extensions is a component that fills in default properties in order to satisfy VRM 0.0 spec.
+/// Use --output_config [file] option to specify output configuration file
+/// </summary>
 class vrm0_default_extensions final : public Component {
 
 public:
@@ -52,7 +56,7 @@ protected:
         }
 
         if (options->output_config.empty()) {
-            AVATAR_COMPONENT_LOG("[ERROR] VRM config file is not specified. Use --vrm0 [file] option to specify VRM config");
+            AVATAR_COMPONENT_LOG("[ERROR] output configuratioin is not specified. Use --output_config [file] option to specify output config");
             outputs.SetValue(0, true);    // discarded
             return;
         }

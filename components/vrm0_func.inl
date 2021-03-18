@@ -92,7 +92,7 @@ static void vrm0_store_blendshapes(const std::string name, cgltf_size mesh, cglt
 static void vrm0_ensure_textureProperties(const json& materialProperties_object, cgltf_size i, cgltf_data* data)
 {
     const auto vrm = &data->vrm_v0_0;
-    auto textureProperties = materialProperties_object["default"]["textureProperties"];
+    auto textureProperties = materialProperties_object["textureProperties"];
 
     if (data->materials[i].normal_texture.texture != nullptr) {
         textureProperties["_BumpMap"] = (data->materials[i].normal_texture.texture - data->textures);
@@ -116,7 +116,7 @@ static void vrm0_ensure_textureProperties(const json& materialProperties_object,
 static void vrm0_ensure_floatProperties(const json& materialProperties_object, cgltf_size i, cgltf_data* data)
 {
     const auto vrm = &data->vrm_v0_0;
-    const auto floatProperties = materialProperties_object["default"]["floatProperties"];
+    const auto floatProperties = materialProperties_object["floatProperties"];
 
     vrm->materialProperties[i].floatProperties_count = floatProperties.size();
     if (vrm->materialProperties[i].floatProperties_count > 0) {
@@ -134,7 +134,7 @@ static void vrm0_ensure_floatProperties(const json& materialProperties_object, c
 static void vrm0_ensure_vectorProperties(const json& materialProperties_object, cgltf_size i, cgltf_data* data)
 {
     const auto vrm = &data->vrm_v0_0;
-    const auto vectorProperties = materialProperties_object["default"]["vectorProperties"];
+    const auto vectorProperties = materialProperties_object["vectorProperties"];
 
     vrm->materialProperties[i].vectorProperties_count = vectorProperties.size();
     if (vrm->materialProperties[i].vectorProperties_count > 0) {
@@ -160,9 +160,8 @@ static void vrm0_ensure_vectorProperties(const json& materialProperties_object, 
 static void vrm0_ensure_mapProperties(const json& materialProperties_object, cgltf_size i, cgltf_data* data)
 {
     const auto vrm = &data->vrm_v0_0;
-    const auto props_default = materialProperties_object["default"];
-    auto keywordMap = props_default["keywordMap"];
-    auto tagMap = props_default["tagMap"];
+    auto keywordMap = materialProperties_object["keywordMap"];
+    auto tagMap = materialProperties_object["tagMap"];
 
     if (data->materials[i].normal_texture.texture != nullptr) {
         keywordMap["_NORMALMAP"] = true;
@@ -252,11 +251,8 @@ static void vrm0_ensure_defaults(const json& output_config_object, cgltf_data* d
             vrm->materialProperties[i].renderQueue = 2000;
 
             auto materialProperties_object = output_config_object["materialProperties"];
-            if (materialProperties_object.is_object() && materialProperties_object["default"].is_object()) {
-
-                auto props_default = materialProperties_object["default"];
-
-                vrm->materialProperties[i].shader = gltf_alloc_chars(props_default["shader"].get<std::string>().c_str());
+            if (materialProperties_object.is_object()) {
+                vrm->materialProperties[i].shader = gltf_alloc_chars(materialProperties_object["shader"].get<std::string>().c_str());
 
                 vrm0_ensure_textureProperties(materialProperties_object, i, data);
                 vrm0_ensure_floatProperties(materialProperties_object, i, data);
