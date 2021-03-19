@@ -134,12 +134,6 @@ protected:
         try {
             circuit->Tick(DSPatch::Component::TickMode::Series);
             discarded = tick_result->is_discarded();
-
-            result = vrm0_validate(data);
-            if (result != cgltf_result_success) {
-                discarded = true;
-                AVATAR_PIPELINE_LOG("[ERROR] Invalid VRM data: " << result);
-            }
         } catch (json::exception e) {
             AVATAR_PIPELINE_LOG("[ERROR] failed to parse JSON: " << e.what());                
             discarded = true;
