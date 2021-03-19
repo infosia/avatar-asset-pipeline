@@ -83,7 +83,6 @@ protected:
                 vrm0_update_meta(vrm0_defaults["meta"], &data->vrm_v0_0);
                 vrm0_ensure_defaults(vrm0_defaults, data);
 
-                
                 const auto validate_result = vrm0_validate(data);
                 if (validate_result != cgltf_result_success) {
                     AVATAR_PIPELINE_LOG("[ERROR] Invalid VRM data: " << validate_result);

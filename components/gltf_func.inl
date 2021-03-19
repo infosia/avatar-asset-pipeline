@@ -726,15 +726,15 @@ static bool gltf_skinning(cgltf_data* data)
 
 static void gltf_apply_transforms(cgltf_data* data, std::unordered_map<std::string, cgltf_node*>& name_to_node)
 {
-    gltf_apply_transform_meshes(data);
-
     for (cgltf_size i = 0; i < data->scenes_count; ++i) {
-        glm::mat4 identity = glm::mat4(1.f);
         const auto scene = &data->scenes[i];
         for (cgltf_size j = 0; j < scene->nodes_count; ++j) {
+            glm::mat4 identity = glm::mat4(1.f);
             gltf_apply_transform(scene->nodes[j], identity);
         }
     }
+
+    gltf_apply_transform_meshes(data);
 
     // clear translation of hips parents
     const auto hips_found = name_to_node.find("Hips");
