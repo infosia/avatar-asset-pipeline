@@ -38,7 +38,7 @@ static bool gltf_override_material_values(json& values, cgltf_material* material
             } else if (value == "BLEND") {
                 material->alpha_mode = cgltf_alpha_mode_blend;
             } else {
-                std::cout << "[WARNING] Unknown alphaMode: " << value << std::endl;
+                return false;
             }
         }
     }

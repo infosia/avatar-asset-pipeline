@@ -90,7 +90,7 @@ protected:
         if (discarded && *discarded) {
             return;
         }
-        AVATAR_COMPONENT_LOG("[INFO] fbx2gltf_execute");
+        AVATAR_PIPELINE_LOG("[INFO] fbx2gltf_execute");
 
         outputs.SetValue(0, run_fbx2gltf(options) != 0);
     }

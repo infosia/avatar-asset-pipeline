@@ -51,7 +51,7 @@ protected:
         if (discarded && *discarded) {
             return;
         }
-        AVATAR_COMPONENT_LOG("[INFO] glb_jpeg_to_png");
+        AVATAR_PIPELINE_LOG("[INFO] glb_jpeg_to_png");
 
         const auto data_ptr = inputs.GetValue<cgltf_data*>(1);
         const auto bones_ptr = inputs.GetValue<AvatarBuild::bone_mappings*>(2);
@@ -62,14 +62,14 @@ protected:
             if (gltf_images_jpg_to_png(data)) {
                 outputs.SetValue(0, false);    // discarded
             } else {
-                AVATAR_COMPONENT_LOG("[ERROR] glb_jpeg_to_png: failed to convert jpeg to png");
+                AVATAR_PIPELINE_LOG("[ERROR] glb_jpeg_to_png: failed to convert jpeg to png");
                 outputs.SetValue(0, true);    // discarded
             }
 
             outputs.SetValue(1, data);
             outputs.SetValue(2, *bones_ptr);
         } else {
-            AVATAR_COMPONENT_LOG("[ERROR] glb_jpeg_to_png: inputs not found");
+            AVATAR_PIPELINE_LOG("[ERROR] glb_jpeg_to_png: inputs not found");
             outputs.SetValue(0, true);    // discarded
         }
     }

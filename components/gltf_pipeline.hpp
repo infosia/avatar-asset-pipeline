@@ -48,7 +48,7 @@ public:
 
         if (data != nullptr) {
             if (!gltf_parse_bone_mappings(data, &bone_mappings, options)) {
-                AVATAR_COMPONENT_LOG("[ERROR] failed to load bone mappings");
+                AVATAR_PIPELINE_LOG("[ERROR] failed to load bone mappings");
             }
         }
     }

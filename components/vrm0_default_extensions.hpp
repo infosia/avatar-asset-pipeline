@@ -56,12 +56,12 @@ protected:
         }
 
         if (options->output_config.empty()) {
-            AVATAR_COMPONENT_LOG("[ERROR] output configuratioin is not specified. Use --output_config [file] option to specify output config");
+            AVATAR_PIPELINE_LOG("[ERROR] output configuratioin is not specified. Use --output_config [file] option to specify output config");
             outputs.SetValue(0, true);    // discarded
             return;
         }
 
-        AVATAR_COMPONENT_LOG("[INFO] vrm0_default_extensions");
+        AVATAR_PIPELINE_LOG("[INFO] vrm0_default_extensions");
 
         const auto data_ptr = inputs.GetValue<cgltf_data*>(1);
         const auto bones_ptr = inputs.GetValue<AvatarBuild::bone_mappings*>(2);
@@ -86,14 +86,14 @@ protected:
                     outputs.SetValue(0, false);    // discarded
                 }
             } else {
-                AVATAR_COMPONENT_LOG("[ERROR] vrm0_default_extensions: failed to get 'defaults' property in " << options->output_config);
+                AVATAR_PIPELINE_LOG("[ERROR] vrm0_default_extensions: failed to get 'defaults' property in " << options->output_config);
                 outputs.SetValue(0, true);    // discarded
             }
 
             outputs.SetValue(1, data);
             outputs.SetValue(2, *bones_ptr);
         } else {
-            AVATAR_COMPONENT_LOG("[ERROR] vrm0_default_extensions: inputs not found");
+            AVATAR_PIPELINE_LOG("[ERROR] vrm0_default_extensions: inputs not found");
             outputs.SetValue(0, true);    // discarded
         }
     }

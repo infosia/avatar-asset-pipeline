@@ -47,7 +47,7 @@ public:
 protected:
     virtual void Process_(SignalBus const&, SignalBus&) override
     {
-        AVATAR_COMPONENT_LOG("[WARN] No Component is found for '" << name << "'");    
+        AVATAR_PIPELINE_LOG("[WARN] No Component is found for '" << name << "'");    
     }
 
     AvatarBuild::cmd_options* options;

@@ -29,7 +29,6 @@
 #include <unordered_map>
 
 #define AVATAR_PIPELINE_LOG(msg)  if (options->verbose) std::cout << msg << std::endl;
-#define AVATAR_COMPONENT_LOG(msg) if (options->verbose) std::cout << msg << std::endl;
 
 namespace AvatarBuild {
 
