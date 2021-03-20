@@ -22,19 +22,16 @@
  */
 #pragma once
 
-#include <DSPatch.h>
+#include "DSPatch.h"
+#include "pipelines.hpp"
 #include <iostream>
 
 namespace DSPatch {
 
-/// <summary>
-/// vrm0_default_extensions is a component that fills in default properties in order to satisfy VRM 0.0 spec.
-/// Use --output_config [file] option to specify output configuration file
-/// </summary>
-class vrm0_default_extensions final : public Component {
+class glb_overrides final : public Component {
 
 public:
-    vrm0_default_extensions(AvatarBuild::cmd_options* options)
+    glb_overrides(AvatarBuild::cmd_options* options)
         : Component()
         , options(options)
     {
@@ -42,7 +39,7 @@ public:
         SetOutputCount_(3);
     }
 
-    virtual ~vrm0_default_extensions()
+    virtual ~glb_overrides()
     {
     }
 
@@ -54,49 +51,32 @@ protected:
         if (discarded && *discarded) {
             return;
         }
-
-        if (options->output_config.empty()) {
-            AVATAR_COMPONENT_LOG("[ERROR] output configuratioin is not specified. Use --output_config [file] option to specify output config");
-            outputs.SetValue(0, true);    // discarded
-            return;
-        }
-
-        AVATAR_COMPONENT_LOG("[INFO] vrm0_default_extensions");
+        AVATAR_COMPONENT_LOG("[INFO] glb_overrides");
 
         const auto data_ptr = inputs.GetValue<cgltf_data*>(1);
         const auto bones_ptr = inputs.GetValue<AvatarBuild::bone_mappings*>(2);
 
         if (data_ptr && bones_ptr) {
             cgltf_data* data = *data_ptr;
-            AvatarBuild::bone_mappings* mappings = *bones_ptr;
 
-            json vrm0_config;
-            if (json_parse(options->output_config, &vrm0_config) && vrm0_config["defaults"].is_object()) {
-                auto vrm0_defaults = vrm0_config["defaults"];
 
-                vrm0_update_bones(mappings, data);
-                vrm0_update_meta(vrm0_defaults["meta"], &data->vrm_v0_0);
-                vrm0_ensure_defaults(vrm0_defaults, data);
-
-                const auto validate_result = vrm0_validate(data);
-                if (validate_result != cgltf_result_success) {
-                    AVATAR_PIPELINE_LOG("[ERROR] Invalid VRM data: " << validate_result);
-                    outputs.SetValue(0, true);    // discarded
-                } else {
-                    outputs.SetValue(0, false);    // discarded
+            json gltf_config;
+            if (json_parse(options->output_config, &gltf_config) && gltf_config["overrides"].is_object()) {
+                auto gltf_overrides = gltf_config["overrides"];
+                if (gltf_overrides.is_object()) {
+                    gltf_override_parameters(gltf_overrides, data, options);
                 }
-            } else {
-                AVATAR_COMPONENT_LOG("[ERROR] vrm0_default_extensions: failed to get 'defaults' property in " << options->output_config);
-                outputs.SetValue(0, true);    // discarded
             }
 
+            outputs.SetValue(0, false);    // discarded
             outputs.SetValue(1, data);
             outputs.SetValue(2, *bones_ptr);
         } else {
-            AVATAR_COMPONENT_LOG("[ERROR] vrm0_default_extensions: inputs not found");
+            AVATAR_COMPONENT_LOG("[ERROR] glb_overrides: inputs not found");
             outputs.SetValue(0, true);    // discarded
         }
     }
+
     AvatarBuild::cmd_options* options;
 };
 

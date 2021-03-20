@@ -200,42 +200,53 @@ static bool gltf_update_joint_buffer(cgltf_accessor* joints)
 
 static bool gltf_create_buffer(cgltf_data* data)
 {
-    const auto buffer = &data->buffers[0];
-
-    cgltf_size total_size = 0;
-    for (cgltf_size j = 0; j < data->buffer_views_count; ++j) {
-        total_size += (data->buffer_views[j].size + 3) & ~3;
-    }
-
-    auto buffer_data = (uint8_t*)gltf_calloc(total_size, sizeof(uint8_t)); // will be freed at cgltf_free()
-    if (buffer_data == nullptr)
+    // this should not happen but for safety
+    if (data->buffers_count == 0)
         return false;
 
-    auto buffer_dst = buffer_data;
-    for (cgltf_size j = 0; j < data->buffer_views_count; ++j) {
-        const auto buffer_view = &data->buffer_views[j];
-        const auto size_to_copy = buffer_view->size;
-        if (buffer_view->data != nullptr) {
-            memcpy_s(buffer_dst, size_to_copy, buffer_view->data, size_to_copy);
-        } else {
-            memcpy_s(buffer_dst, size_to_copy, ((uint8_t*)buffer_view->buffer->data + buffer_view->offset), size_to_copy);
+    for (cgltf_size i = 0; i < data->buffers_count; ++i) {
+
+        auto buffer = &data->buffers[i];
+
+        cgltf_size total_size = 0;
+        for (cgltf_size j = 0; j < data->buffer_views_count; ++j) {
+            if (data->buffer_views[i].buffer == buffer) {
+                total_size += (data->buffer_views[j].size + 3) & ~3;
+            }
         }
-        buffer_view->offset = (buffer_dst - buffer_data);
-        buffer_dst += (size_to_copy + 3) & ~3;
 
-        if (buffer_view->data != nullptr) {
-            gltf_free(buffer_view->data);
-            buffer_view->data = nullptr;
+        auto buffer_data = (uint8_t*)gltf_calloc(total_size, sizeof(uint8_t)); // will be freed at cgltf_free()
+        if (buffer_data == nullptr)
+            return false;
+
+        auto buffer_dst = buffer_data;
+        for (cgltf_size j = 0; j < data->buffer_views_count; ++j) {
+            const auto buffer_view = &data->buffer_views[j];
+            if (data->buffer_views[i].buffer == buffer) {
+                const auto size_to_copy = buffer_view->size;
+                if (buffer_view->data != nullptr) {
+                    memcpy_s(buffer_dst, size_to_copy, buffer_view->data, size_to_copy);
+                } else {
+                    memcpy_s(buffer_dst, size_to_copy, ((uint8_t*)buffer_view->buffer->data + buffer_view->offset), size_to_copy);
+                }
+                buffer_view->offset = (buffer_dst - buffer_data);
+                buffer_dst += (size_to_copy + 3) & ~3;
+
+                if (buffer_view->data != nullptr) {
+                    gltf_free(buffer_view->data);
+                    buffer_view->data = nullptr;
+                }
+            }
         }
-    }
 
-    // check if buffer has been updated from original, need to free in that case
-    if (buffer->data != data->bin) {
-        gltf_free(buffer->data);
-    }
+        // check if buffer has been updated from original, need to free in that case
+        if (buffer->data != data->bin) {
+            gltf_free(buffer->data);
+        }
 
-    buffer->size = total_size;
-    buffer->data = buffer_data;
+        buffer->size = total_size;
+        buffer->data = buffer_data;
+    }
 
     return true;
 }
@@ -793,6 +804,16 @@ static void gltf_update_inverse_bind_matrices(cgltf_data* data)
     }
 }
 
+static std::string gltf_get_image_mimetype(const std::string& ext)
+{
+    if (ext == ".jpg" || ext == ".jpeg")
+        return "image/jpeg";
+    if (ext == ".png")
+        return "image/png";
+
+    return "";
+}
+
 static bool gltf_is_mimetype_jpeg(const char* mime_type)
 {
     if (mime_type == nullptr)
@@ -835,7 +856,7 @@ static bool gltf_images_jpg_to_png(cgltf_data* data)
 
         // assign new mime type
         gltf_free(image->mime_type);
-        image->mime_type = gltf_alloc_chars("image\\/png");
+        image->mime_type = gltf_alloc_chars("image/png");
     }
 
     gltf_create_buffer(data);

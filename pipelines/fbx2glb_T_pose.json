@@ -11,6 +11,7 @@
     {
       "name":"gltf_pipeline",
       "components":[
+        "glb_overrides",
         "glb_T_pose"
       ]
     }

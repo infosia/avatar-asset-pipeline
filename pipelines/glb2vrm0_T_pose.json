@@ -9,6 +9,7 @@
         "glb_transforms_apply",
         "glb_z_reverse",
         "glb_jpeg_to_png",
+        "glb_overrides",
         "vrm0_fix_joint_buffer",
         "vrm0_default_extensions"
       ]

@@ -8,10 +8,11 @@ file(GLOB pipeline_FILES components/*.hpp)
 
 set(SRC_FILES
   src/main.cpp
-  components/json_func.inl
-  components/gltf_func.inl
-  components/bones_func.inl
-  components/vrm0_func.inl
+  include/json_func.inl
+  include/gltf_func.inl
+  include/gltf_overrides_func.inl
+  include/bones_func.inl
+  include/vrm0_func.inl
   ${pipeline_FILES}
 )
 
@@ -20,6 +21,7 @@ set (BUILD_INCLUDES
   ${CMAKE_CURRENT_SOURCE_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}/extern/cgltf
   ${CMAKE_CURRENT_SOURCE_DIR}/extern/glm
+  ${CMAKE_CURRENT_SOURCE_DIR}/extern/ghc
   ${CMAKE_CURRENT_SOURCE_DIR}/extern/dspatch/include
 )
 

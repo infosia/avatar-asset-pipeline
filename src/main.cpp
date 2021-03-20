@@ -51,6 +51,7 @@ using json = nlohmann::json;
 
 #include "pipelines.hpp"
 #include "gltf_func.inl"
+#include "gltf_overrides_func.inl"
 #include "json_func.inl"
 #include "bones_func.inl"
 #include "vrm0_func.inl"
@@ -59,6 +60,7 @@ using json = nlohmann::json;
 #include "glb_jpeg_to_png.hpp"
 #include "glb_transforms_apply.hpp"
 #include "glb_z_reverse.hpp"
+#include "glb_overrides.hpp"
 #include "vrm0_fix_joint_buffer.hpp"
 #include "vrm0_default_extensions.hpp"
 #include "vrm0_remove_extensions.hpp"
@@ -82,6 +84,8 @@ static std::shared_ptr<DSPatch::Component> create_component(std::string name, cm
         return std::make_shared<DSPatch::glb_jpeg_to_png>(options);
     } else if (name == "glb_T_pose") {
         return std::make_shared<DSPatch::glb_T_pose>(options);
+    } else if (name == "glb_overrides") {
+        return std::make_shared<DSPatch::glb_overrides>(options);
     } else if (name == "vrm0_fix_joint_buffer") {
         return std::make_shared<DSPatch::vrm0_fix_joint_buffer>(options);
     } else if (name == "vrm0_default_extensions") {
