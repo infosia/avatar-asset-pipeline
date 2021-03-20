@@ -28,7 +28,10 @@
 #include <vector>
 #include <unordered_map>
 
-#define AVATAR_PIPELINE_LOG(msg)  if (options->verbose) std::cout << msg << std::endl;
+static bool pipeline_leackcheck_enabled = false;
+static bool pipeline_verbose_enabled = false;
+
+#define AVATAR_PIPELINE_LOG(msg)  if (pipeline_verbose_enabled) std::cout << msg << std::endl;
 
 namespace AvatarBuild {
 

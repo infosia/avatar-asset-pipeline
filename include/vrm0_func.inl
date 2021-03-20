@@ -392,23 +392,23 @@ static bool vrm0_update_meta(const json& meta_object, cgltf_vrm_v0_0* vrm)
             meta->otherLicenseUrl = gltf_alloc_chars(value);
         } else if (key == "licenseName") {
             if (!select_cgltf_vrm_meta_licenseName_v0_0(value, &meta->licenseName)) {
-                std::cout << "[ERROR] Unknown " << key << ": " << value << std::endl;
+                AVATAR_PIPELINE_LOG("[ERROR] Unknown " << key << ": " << value);
             }
         } else if (key == "allowedUserName") {
             if (!select_cgltf_vrm_meta_allowedUserName_v0_0(value, &meta->allowedUserName)) {
-                std::cout << "[ERROR] Unknown " << key << ": " << value << std::endl;
+                AVATAR_PIPELINE_LOG("[ERROR] Unknown " << key << ": " << value);
             }
         } else if (key == "violentUssageName") {
             if (!select_cgltf_vrm_meta_violentUssageName_v0_0(value, &meta->violentUssageName)) {
-                std::cout << "[ERROR] Unknown " << key << ": " << value << std::endl;
+                AVATAR_PIPELINE_LOG("[ERROR] Unknown " << key << ": " << value);
             }
         } else if (key == "sexualUssageName") {
             if (!select_cgltf_vrm_meta_sexualUssageName_v0_0(value, &meta->sexualUssageName)) {
-                std::cout << "[ERROR] Unknown " << key << ": " << value << std::endl;
+                AVATAR_PIPELINE_LOG("[ERROR] Unknown " << key << ": " << value);
             }
         } else if (key == "commercialUssageName") {
             if (!select_cgltf_vrm_meta_commercialUssageName_v0_0(value, &meta->commercialUssageName)) {
-                std::cout << "[ERROR] Unknown " << key << ": " << value << std::endl;
+                AVATAR_PIPELINE_LOG("[ERROR] Unknown " << key << ": " << value);
             }
         }
     }
@@ -480,7 +480,7 @@ static bool vrm0_update_bones(AvatarBuild::bone_mappings* mappings, cgltf_data* 
                 vrm->firstPerson.firstPersonBone = found->second;
             }
         } else {
-            std::cout << "[ERROR] bone is not found for " << bone_name << std::endl;
+            AVATAR_PIPELINE_LOG("[ERROR] bone is not found for " << bone_name);
         }
 
         i++;

@@ -52,13 +52,13 @@ static inline int run_fbx2gltf(AvatarBuild::cmd_options* options)
     std::tie(status, ec) = reproc::run(reproc_args, reproc_options);
 
     if (status != 0) {
-        std::cout << "[ERROR] Failed to execute " << options->fbx2gltf << std::endl;    
-        std::cout << "Please check if " << options->input << " is valid FBX file" << std::endl;    
-        std::cout << "Make sure to specify path to fbx2gltf executable with --fbx2gltf option" << std::endl;    
+        AVATAR_PIPELINE_LOG("[ERROR] Failed to execute " << options->fbx2gltf);
+        AVATAR_PIPELINE_LOG("Please check if " << options->input << " is valid FBX file");
+        AVATAR_PIPELINE_LOG("Make sure to specify path to fbx2gltf executable with --fbx2gltf option");
     }
 
     if (ec) {
-        std::cout << "[ERROR] " << ec.message() << std::endl;
+        AVATAR_PIPELINE_LOG("[ERROR] " << ec.message());
     }
 
     return ec ? ec.value() : status;

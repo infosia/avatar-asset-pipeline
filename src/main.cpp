@@ -227,8 +227,11 @@ int main(int argc, char** argv)
     if (debug) {
         gltf_options.memory.alloc = &gltf_leakcheck_malloc;
         gltf_options.memory.free = &gltf_leackcheck_free;
-        gltf_leackcheck_enabled = true;
+
+        pipeline_leackcheck_enabled = true;
     }
+
+    pipeline_verbose_enabled = verbose;
 
     cmd_options options = { config, input, output, input_config, output_config, fbx2gltf, verbose, debug, gltf_options };
 

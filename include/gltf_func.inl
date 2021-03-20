@@ -35,13 +35,11 @@
 #include <glm/gtx/matrix_decompose.hpp>
 
 // avoid infinite loop on node tree traversal
-#define GLTF_PARENT_LOOP_BEGIN(CONDITION) { std::uint16_t COUNTER=0; while (CONDITION) { ++COUNTER; if (COUNTER > 256) {std::cout << "[WARNING] infinite loop detected" << std::endl; break;}
+#define GLTF_PARENT_LOOP_BEGIN(CONDITION) { std::uint16_t COUNTER=0; while (CONDITION) { ++COUNTER; if (COUNTER > 256) {AVATAR_PIPELINE_LOG("[WARNING] infinite loop detected at parent loop"); break;}
 #define GLTF_PARENT_LOOP_END }}
 
-static bool gltf_leackcheck_enabled = false; // cheating
-
-#define gltf_calloc(N, SIZE) (gltf_leackcheck_enabled ? stb_leakcheck_calloc(N * SIZE, __FILE__, __LINE__) : calloc(N, SIZE))
-#define gltf_free(P) (gltf_leackcheck_enabled ? stb_leakcheck_free(P) : free(P))
+#define gltf_calloc(N, SIZE) (pipeline_leackcheck_enabled ? stb_leakcheck_calloc(N * SIZE, __FILE__, __LINE__) : calloc(N, SIZE))
+#define gltf_free(P) (pipeline_leackcheck_enabled ? stb_leakcheck_free(P) : free(P))
 
 static void* gltf_leakcheck_malloc(void* user, cgltf_size size)
 {

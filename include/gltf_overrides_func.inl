@@ -23,6 +23,7 @@
 
 #include <ghc/filesystem.hpp>
 #include <tuple>
+
 namespace fs = ghc::filesystem;
 
 static bool gltf_override_material_values(json& values, cgltf_material* material)
@@ -48,6 +49,8 @@ static bool gltf_override_material_values(json& values, cgltf_material* material
 
 static bool gltf_read_image_from_file(fs::path file, cgltf_image* image, cgltf_buffer_view* buffer_view)
 {
+    AVATAR_PIPELINE_LOG("[INFO] reading " << file.filename().u8string());
+
     const auto mime_type = gltf_get_image_mimetype(file.extension().u8string());
     if (!mime_type.empty())
         image->mime_type = gltf_alloc_chars(mime_type.c_str());
@@ -193,7 +196,6 @@ static bool gltf_override_find_missing_textures(json& rules, cgltf_data* data, c
         // copy new buffer_views
         cgltf_size bindex = 0;
         for (cgltf_size i = data->buffer_views_count; i < new_buffer_view_size; ++i) {
-            //buffer_views[i]. = files_for_buffer_views[bindex];
             const auto files_for_buffer_view = files_for_buffer_views[bindex];
 
             gltf_read_image_from_file(std::get<0>(files_for_buffer_view), std::get<1>(files_for_buffer_view), &buffer_views[i]);

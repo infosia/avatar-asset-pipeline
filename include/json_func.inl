@@ -53,15 +53,15 @@ static bool json_parse(std::string json_file, json* json)
 {
     std::ifstream f(json_file, std::ios::in);
     if (f.fail()) {
-        std::cout << "[ERROR] failed to parse JSON file " << json_file << std::endl;
+        AVATAR_PIPELINE_LOG("[ERROR] failed to parse JSON file " << json_file);
         return false;
     }
 
     try {
         f >> *json;
      } catch (json::parse_error& e) {
-        std::cout << "[ERROR] failed to parse JSON file " << json_file << std::endl;
-        std::cout << "\t" << e.what() << std::endl;
+        AVATAR_PIPELINE_LOG("[ERROR] failed to parse JSON file " << json_file);
+        AVATAR_PIPELINE_LOG("\t" << e.what());
         return false;
     }
 
