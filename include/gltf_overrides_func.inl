@@ -22,6 +22,7 @@
  */
 
 #include <ghc/filesystem.hpp>
+#include <tuple>
 namespace fs = ghc::filesystem;
 
 static bool gltf_override_material_values(json& values, cgltf_material* material)
@@ -55,27 +56,32 @@ static bool gltf_read_image_from_file(fs::path file, cgltf_image* image, cgltf_b
     if (image->uri != nullptr) {
         gltf_free(image->uri);
         image->uri = nullptr;
+        image->buffer_view = nullptr;
     }
 
     if (image->buffer_view == nullptr) {
-        image->buffer_view = (cgltf_buffer_view*)gltf_calloc(1, sizeof(cgltf_buffer_view));
-        image->buffer_view->name = gltf_alloc_chars(file.stem().u8string().c_str());
-        image->buffer_view->buffer = nullptr;
+        image->buffer_view = buffer_view;
     }
 
     std::ifstream image_data(file, std::ios::in | std::ios::binary);
     if (image_data.good()) {
+
+        if (image->buffer_view->data != nullptr)
+            gltf_free(image->buffer_view->data);
+
         std::vector<uint8_t> raw(std::istreambuf_iterator<char>(image_data), {});
         const auto size = raw.size();
         image->buffer_view->size = size;
         image->buffer_view->data = (uint8_t*)gltf_calloc(1, size);
         memcpy_s(image->buffer_view->data, size, raw.data(), size);
         image_data.close();
+
+        if (image->buffer_view->name == nullptr) {
+            image->buffer_view->name = gltf_alloc_chars(file.stem().u8string().c_str());
+        }
     } else {
         return false;
     }
-
-    buffer_view = image->buffer_view;
 
     return true;
 }
@@ -112,7 +118,7 @@ static bool gltf_override_find_missing_textures(json& rules, cgltf_data* data, c
     const fs::path parent_path = fs::path(options->output_config).parent_path();
     const fs::path path_from = parent_path / from;
 
-    std::vector<cgltf_buffer_view> new_buffer_views;
+    std::vector<std::tuple<fs::path, cgltf_image*>> files_for_buffer_views;
     for (const auto& entry : fs::directory_iterator(path_from)) {
         const auto file = entry.path();
         const auto ext = file.extension();
@@ -124,70 +130,87 @@ static bool gltf_override_find_missing_textures(json& rules, cgltf_data* data, c
 
         const auto images_found = images.find(stem);
         if (images_found != images.end()) {
-            cgltf_buffer_view buffer_view = { nullptr, nullptr };
-            if (gltf_read_image_from_file(file, images_found->second, &buffer_view) && buffer_view.buffer == nullptr) {
-                new_buffer_views.push_back(buffer_view);
-            }
+            files_for_buffer_views.push_back(std::make_tuple(file, images_found->second));
             break;
         }
 
         const auto textures_found = textures.find(stem);
         if (textures_found != textures.end()) {
-            cgltf_buffer_view buffer_view = { nullptr, nullptr };
-            if (gltf_read_image_from_file(file, textures_found->second->image, &buffer_view) && buffer_view.buffer == nullptr) {
-                new_buffer_views.push_back(buffer_view);
-            }
+            files_for_buffer_views.push_back(std::make_tuple(file, textures_found->second->image));
             break;
         }
 
         if (material->name != nullptr) {
             std::string name = material->name;
             if (stem == name || stem == (name + "_color") && material->has_pbr_metallic_roughness && material->pbr_metallic_roughness.base_color_texture.texture != nullptr) {
-                cgltf_buffer_view buffer_view = { nullptr, nullptr };
-                if (gltf_read_image_from_file(file, material->pbr_metallic_roughness.base_color_texture.texture->image, &buffer_view) && buffer_view.buffer == nullptr) {
-                    new_buffer_views.push_back(buffer_view);
-                }
+                files_for_buffer_views.push_back(std::make_tuple(file, material->pbr_metallic_roughness.base_color_texture.texture->image));
                 break;
             }
         }
     }
 
-    // create new buffer view for images (needs allocation)
-    if (new_buffer_views.size() > 0) {
-        cgltf_size total_size = 0;
-        for (const auto buffer_view : new_buffer_views) {
-            total_size += (buffer_view.size + 3) & ~3;
+    // create new buffer_view for images (needs allocation)
+    if (files_for_buffer_views.size() > 0) {
+
+        // re-create buffer_views
+        const auto new_buffer_view_size = data->buffer_views_count + files_for_buffer_views.size();
+        auto buffer_views = (cgltf_buffer_view*)gltf_calloc(new_buffer_view_size, sizeof(cgltf_buffer_view));
+
+        // copy existing buffer_views
+        for (cgltf_size i = 0; i < data->buffer_views_count; ++i) {
+            buffer_views[i] = data->buffer_views[i];
         }
-        if (total_size > 0) {
-            const auto new_buffers_count = data->buffers_count + 1;
 
-            cgltf_buffer* new_buffers = (cgltf_buffer*)gltf_calloc(new_buffers_count, sizeof(cgltf_buffer));
-            for (cgltf_size i = 0; i < data->buffers_count; ++i) {
-                new_buffers[i] = data->buffers[i];
+        // update buffer_view pointers
+        for (cgltf_size i = 0; i < data->images_count; ++i) {
+            const auto image = &data->images[i];
+            if (image->buffer_view != nullptr) {
+                image->buffer_view = &buffer_views[(image->buffer_view - data->buffer_views)];
             }
-
-            // update buffer pointers
-            for (cgltf_size i = 0; i < data->buffer_views_count; ++i) {
-                auto view = &data->buffer_views[i];
-                for (cgltf_size j = 0; j < data->buffers_count; ++j) {
-                    const auto old_buffer = &data->buffers[j];
-                    if (view->buffer == old_buffer) {
-                        view->buffer = &new_buffers[j];
-                    }
-                    if (view->has_meshopt_compression && view->meshopt_compression.buffer == old_buffer) {
-                        view->meshopt_compression.buffer = &new_buffers[j];
-                    }
+        }
+        for (cgltf_size i = 0; i < data->accessors_count; ++i) {
+            const auto accessor = &data->accessors[i];
+            if (accessor->buffer_view != nullptr) {
+                accessor->buffer_view = &buffer_views[(accessor->buffer_view - data->buffer_views)];
+            }
+            if (accessor->sparse.indices_buffer_view != nullptr) {
+                accessor->sparse.indices_buffer_view = &buffer_views[(accessor->sparse.indices_buffer_view - data->buffer_views)];
+            }
+            if (accessor->sparse.values_buffer_view != nullptr) {
+                accessor->sparse.values_buffer_view = &buffer_views[(accessor->sparse.values_buffer_view - data->buffer_views)];
+            }
+        }
+        for (cgltf_size i = 0; i < data->meshes_count; ++i) {
+            const auto mesh = &data->meshes[i];
+            for (cgltf_size j = 0; j < mesh->primitives_count; ++j) {
+                const auto primitive = &mesh->primitives[j];
+                if (primitive->has_draco_mesh_compression && primitive->draco_mesh_compression.buffer_view != nullptr) {
+                    primitive->draco_mesh_compression.buffer_view = &buffer_views[(primitive->draco_mesh_compression.buffer_view - data->buffer_views)];
                 }
             }
-
-            auto new_buffer = new_buffers[data->buffers_count];
-            new_buffer.size = total_size;
-            new_buffer.data = (uint8_t*)gltf_calloc(1, total_size);
-            for (const auto buffer_view : new_buffer_views) {
-                // TODO
-            }
-
         }
+
+        // copy new buffer_views
+        cgltf_size bindex = 0;
+        for (cgltf_size i = data->buffer_views_count; i < new_buffer_view_size; ++i) {
+            //buffer_views[i]. = files_for_buffer_views[bindex];
+            const auto files_for_buffer_view = files_for_buffer_views[bindex];
+
+            gltf_read_image_from_file(std::get<0>(files_for_buffer_view), std::get<1>(files_for_buffer_view), &buffer_views[i]);
+
+            if (buffer_views[i].buffer == nullptr) {
+                buffer_views[i].buffer = &data->buffers[0];
+            }
+            ++bindex;
+        }
+
+        // free old buffers
+        data->memory.free(data->memory.user_data, data->buffer_views);
+
+        data->buffer_views = buffer_views;
+        data->buffer_views_count = new_buffer_view_size;
+
+        return gltf_create_buffer(data);
     }
 
     return true;
