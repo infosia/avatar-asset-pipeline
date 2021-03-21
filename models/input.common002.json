@@ -1,0 +1,69 @@
+{
+  "config":{
+    "pattern_match": true,
+    "with_any_case": true
+  },
+  "poses":{
+    "T": {
+      "LeftUpperArm":  {
+        "rotation": [ 0, 0, 0, 1 ]
+      },
+      "RightUpperArm": {
+        "rotation": [ 0, 0, 0, 1 ]
+      }
+    }
+  },
+  "bones":{
+    "Hips":"Hips",
+    "LeftUpperLeg":"Upper Leg.L",
+    "RightUpperLeg":"Upper Leg.L",
+    "LeftLowerLeg":"Lower Leg.L",
+    "RightLowerLeg":"Lower Leg.R",
+    "LeftFoot":"Foot.L",
+    "RightFoot":"Foot.R",
+    "Spine":"Spine",
+    "Chest":"Chest",
+    "Neck":"Neck",
+    "Head":"Head",
+    "LeftShoulder":"Shoulder.L",
+    "RightShoulder":"Shoulder.R",
+    "LeftUpperArm":"Upper Arm.L",
+    "RightUpperArm":"Upper Arm.R",
+    "LeftLowerArm":"Lower Arm.L",
+    "RightLowerArm":"Lower Arm.R",
+    "LeftHand":"Hand.L",
+    "RightHand":"Hand.R",
+    "LeftToes":"Toes.L",
+    "RightToes":"Toes.R",
+    "LeftThumbProximal":"Proximal Thumb.L",
+    "LeftThumbIntermediate":"Intermediate Thumb.L",
+    "LeftThumbDistal":"Distal Thumb.L",
+    "LeftIndexProximal":"Proximal Index.L",
+    "LeftIndexIntermediate":"Intermediate Index.L",
+    "LeftIndexDistal":"Distal Index.L",
+    "LeftMiddleProximal":"Proximal Middle.L",
+    "LeftMiddleIntermediate":"Intermediate Middle.L",
+    "LeftMiddleDistal":"Distal Middle.L",
+    "LeftRingProximal":"Proximal Ring.L",
+    "LeftRingIntermediate":"Intermediate Ring.L",
+    "LeftRingDistal":"Distal Ring.L",
+    "LeftLittleProximal":"Proximal Little.L",
+    "LeftLittleIntermediate":"Intermediate Little.L",
+    "LeftLittleDistal":"Distal Little.L",
+    "RightThumbProximal":"Proximal Thumb.R",
+    "RightThumbIntermediate":"Intermediate Thumb.R",
+    "RightThumbDistal":"Distal Thumb.R",
+    "RightIndexProximal":"Proximal Index.R",
+    "RightIndexIntermediate":"Intermediate Index.R",
+    "RightIndexDistal":"Distal Index.R",
+    "RightMiddleProximal":"Proximal Middle.R",
+    "RightMiddleIntermediate":"Intermediate Middle.R",
+    "RightMiddleDistal":"Distal Middle.R",
+    "RightRingProximal":"Proximal Ring.R",
+    "RightRingIntermediate":"Intermediate Ring.R",
+    "RightRingDistal":"Distal Ring.R",
+    "RightLittleProximal":"Proximal Little.R",
+    "RightLittleIntermediate":"Intermediate Little.R",
+    "RightLittleDistal":"Distal Little.R"
+  }
+}

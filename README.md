@@ -40,6 +40,28 @@ Check out `pipelines` directory for working pipeline examples in practice.
 * `--output_config`: Output configuration file name (JSON)
 * `--fbx2gltf`: Path to fbx2gltf executable
 
+## Features
+
+- [x] Apply all node transforms
+- [x] Convert FBX to glTF binary (.glb)
+- [x] Convert FBX to VRM
+- [x] Convert glTF binary to VRM
+- [x] Create glTF binary back from VRM
+- [x] Change A-pose to T-pose
+- [x] Convert all jpeg textures to png
+- [x] Reverse Z axis
+- [x] Pack external textures
+- [x] Update material properties
+- [x] Update VRM properties
+- [ ] Create multiple Level of Details (LOD)
+- [ ] Pack multiple LOD into glTF (MSFT_lod)
+- [ ] Index optimization
+- [ ] Vertex cache optimization
+- [ ] Overdraw optimization
+- [ ] Vertex fetch optimization
+- [ ] Vertex quantization
+- [ ] Vertex/index buffer compression
+
 ## Common transformations in practice
 
 ### Convert A-pose to T-pose glTF binary (.glb)
