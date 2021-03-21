@@ -3,8 +3,29 @@
     "materials": [
       {
         "rules": {
-          "name":"(?:f001_)(?:.*)",
+          "name":"f001_body",
           "find_missing_textures_from": "Female_Adult_01.Textures"
+        },
+        "values":{
+          "alphaMode":"OPAQUE"
+        }
+      },
+       {
+        "rules": {
+          "name":"f001_head",
+          "find_missing_textures_from": "Female_Adult_01.Textures"
+        },
+        "values":{
+          "alphaMode":"OPAQUE"
+        }
+      },
+      {
+        "rules": {
+          "name":"f001_opacity",
+          "find_missing_textures_from": "Female_Adult_01.Textures"
+        },
+        "values":{
+          "alphaMode":"BLEND"
         }
       }
     ]

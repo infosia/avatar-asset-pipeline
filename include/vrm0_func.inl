@@ -115,7 +115,13 @@ static void vrm0_ensure_textureProperties(const json& materialProperties_object,
 static void vrm0_ensure_floatProperties(const json& materialProperties_object, cgltf_size i, cgltf_data* data)
 {
     const auto vrm = &data->vrm_v0_0;
-    const auto floatProperties = materialProperties_object["floatProperties"];
+    auto floatProperties = materialProperties_object["floatProperties"];
+
+    if (data->materials[i].alpha_mode == cgltf_alpha_mode_blend) {
+        floatProperties["_BlendMode"] = 1.f;
+    } else {
+        floatProperties["_BlendMode"] = 0.f;
+    }
 
     vrm->materialProperties[i].floatProperties_count = floatProperties.size();
     if (vrm->materialProperties[i].floatProperties_count > 0) {
@@ -171,7 +177,7 @@ static void vrm0_ensure_mapProperties(const json& materialProperties_object, cgl
     } else if (data->materials[i].alpha_mode == cgltf_alpha_mode_mask) {
         tagMap["RenderType"] = "Cutout";
     } else if (data->materials[i].alpha_mode == cgltf_alpha_mode_blend) {
-        tagMap["RenderType"] = "Transparent";
+        tagMap["RenderType"] = "TransparentCutout";
     }
 
     vrm->materialProperties[i].keywordMap_count = keywordMap.size();
