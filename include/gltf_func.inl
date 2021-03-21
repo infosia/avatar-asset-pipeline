@@ -656,6 +656,15 @@ static bool gltf_apply_weight(cgltf_node* skin_node, cgltf_float* positions, cgl
         normals[2] = outNormal.z;
     }
 
+    skin_node->scale[0] = 1;
+    skin_node->scale[1] = 1;
+    skin_node->scale[2] = 1;
+
+    skin_node->rotation[0] = 0;
+    skin_node->rotation[1] = 0;
+    skin_node->rotation[2] = 0;
+    skin_node->rotation[3] = 1;
+
     return true;
 }
 
@@ -735,6 +744,8 @@ static bool gltf_skinning(cgltf_data* data)
 
 static void gltf_apply_transforms(cgltf_data* data, std::unordered_map<std::string, cgltf_node*>& name_to_node)
 {
+    gltf_apply_transform_meshes(data);
+
     for (cgltf_size i = 0; i < data->scenes_count; ++i) {
         const auto scene = &data->scenes[i];
         for (cgltf_size j = 0; j < scene->nodes_count; ++j) {
@@ -742,8 +753,6 @@ static void gltf_apply_transforms(cgltf_data* data, std::unordered_map<std::stri
             gltf_apply_transform(scene->nodes[j], identity);
         }
     }
-
-    gltf_apply_transform_meshes(data);
 
     // clear translation of hips parents
     const auto hips_found = name_to_node.find("Hips");
