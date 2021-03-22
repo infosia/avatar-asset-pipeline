@@ -12,7 +12,7 @@ Avatar asset pipeline is a tool to create continuous integration build pipelines
 
 > According to the story, a united human race in the generations following the Great Flood, speaking a single language and migrating eastward, comes to the land of Shinar. There they agree to build a city and a tower tall enough to reach heaven. God, observing their city and tower, confounds their speech so that they can no longer understand each other, and scatters them around the world. 
 
-Avatar asset pipeline is aiming to help common workflows for both 3D artist and avatar asset user. Avatar pipeline helps you to:
+Avatar asset pipeline is aiming to help common workflows for both 3D artist and avatar asset user. For instance avatar pipeline helps you to:
 
 * Create multiple LOD (Level of Details) assets in order to support multiple platforms such as standalone VR headset device like Oculus Quest, while preserving your original asset clean
 * Create T-pose asset from A-pose asset so 3D artist don't have to do it manually every time asset is updated
@@ -47,7 +47,7 @@ Check out `pipelines` directory for working pipeline examples in practice.
 - [x] Convert FBX to VRM
 - [x] Convert glTF binary to VRM
 - [x] Create glTF binary back from VRM
-- [x] Change A-pose to T-pose
+- [x] Change A-pose to T-pose (and vice versa)
 - [x] Convert all jpeg textures to png
 - [x] Reverse Z axis
 - [x] Pack external textures
@@ -150,8 +150,10 @@ Check out `pipelines` directory for working pipeline examples in practice.
 ```
 
 ```
-> avatar-build.exe --pipeline pipelines/fbx2glb.json --debug -v --input_config models/input.mixamo.json -i models/xbot.fbx -o models/xbot.glb
+> avatar-build.exe --pipeline pipelines/fbx2glb.json --debug -v --fbx2gltf extern/fbx2gltf.exe --input_config models/input.mixamo.json -i models/xbot.fbx -o models/xbot.glb
 ```
+
+Conversion of FBX to glTF using `fbx_pipeline` requires [FBX2glTF executable](https://github.com/facebookincubator/FBX2glTF/releases). In order to use FBX2glTF with asset pipeline you need to specify a path to the executable using `--fbx2gltf` option such as `--fbx2gltf extern/fbx2gltf.exe`.
 
 ## Common transformations for VRM
 
@@ -233,10 +235,6 @@ This has been needed to support platforms that do not enable jpeg texture such a
 ```
 
 ![figure003](docs/figure003.png)
-
-## Converting FBX to glTF
-
-Conversion of FBX to glTF using `fbx_pipeline` requires [FBX2glTF executable](https://github.com/facebookincubator/FBX2glTF/releases). In order to use FBX2glTF with asset pipeline you need to specify a path to the executable using `--fbx2gltf` option such as `--fbx2gltf bin/fbx2gltf.exe`.
 
 ## Bone naming conventions
 
