@@ -295,6 +295,43 @@ You can explicitly specify bone naming conversions by using `--input_config` opt
 }
 ```
 
+## Material properties override (Experimental)
+
+In output configuration file (which can be specified by `--output_config` option) you can override some material properties using `overrides` property. In order to select material which you want to override you can set `rules` by standard regular expressions. Following example shows a rule to search for the material that contains *_MAT* in its `name` property following numeric value in suffix. The `values` property is the values to override. Currently `alphaMode` and `doubleSided` property values can be overridden (all conversion logic are inside `gltf_override_material_values` function in `gltf_overrides_func.inl` for now)
+
+```js
+"overrides": {
+  "materials": [
+    {
+      "rules": {
+        "name":"(?:.+)(?:_MAT)(?:[1-9])?" // matches all materials that has a name "Skin_MAT", "Body_MAT1" etc
+      },
+      "values":{
+        "alphaMode":"OPAQUE" // changes the alphaMode property to OPAQUE
+      }
+    }
+  ]
+}
+```
+
+### Find and load external material textures
+
+When you use FBX, materials can be defined as external texture image asset and the conversion tool `FBX2glTF` tend to fail to fetch those textures. In order to fetch these missing textures, you can use `find_missing_textures_from` property. It searches for the textures in given directory and tries to load it as glTF buffer. For instance following configuration shows that material textures under `Missing.Textures` directory to be loaded as `f001_body` material.  It searches for the missing textures based on following order in glTF: 1. `image.name` that is linked to the material, 2. `texture.name` that is linked to the material, 3. `material.name`. It also takes *"_color"* suffix into account. Note that only png and jpg textures are supported for now.
+
+```js
+"overrides": {
+  "materials": [
+    {
+      "rules": {
+        "name":"f001_body", // searches a material that has a name "f001_body"
+        "find_missing_textures_from": "Missing.Textures"
+        // searches textures under the directory (relative to this configuration file)
+      }
+    }
+  ]
+}
+```
+
 ## License
 
 * Available to anybody free of charge, under the terms of MIT License (see LICENSE).
