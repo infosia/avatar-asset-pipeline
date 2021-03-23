@@ -42,13 +42,14 @@ Check out `pipelines` directory for working pipeline examples in practice.
 
 ## Features
 
-- [x] Apply all node transforms
+- [x] Apply all node transforms (compatible with mixamo, VRM etc)
 - [x] Convert FBX to glTF binary (.glb)
 - [x] Convert FBX to VRM
 - [x] Convert glTF binary to VRM
 - [x] Create glTF binary back from VRM
 - [x] Change A-pose to T-pose (and vice versa)
 - [x] Convert all jpeg textures to png
+- [x] Remove animations
 - [x] Reverse Z axis
 - [x] Pack external textures
 - [x] Update material properties
@@ -61,6 +62,15 @@ Check out `pipelines` directory for working pipeline examples in practice.
 - [ ] Vertex fetch optimization
 - [ ] Vertex quantization
 - [ ] Vertex/index buffer compression
+
+## Tested Platforms
+
+- [x] [Ready Player Me](https://fullbody.readyplayer.me/) Full-body avatars (.glb)
+- [x] [Adobe mixamo](https://www.mixamo.com/) avatars (.fbx)
+- [x] [Microsoft Rocketbox](https://github.com/microsoft/Microsoft-Rocketbox) avatars (.fbx)
+- [x] [THE SEED ONLINE](https://seed.online/) (.vrm)
+- [x] [VRoid Hub](https://hub.vroid.com/) (.vrm)
+- [x] [Cluster](https://cluster.mu/) (.vrm)
 
 ## Common transformations in practice
 
@@ -85,7 +95,7 @@ Check out `pipelines` directory for working pipeline examples in practice.
 > avatar-build.exe --pipeline pipelines/glb_T_pose.json --debug -v --input_config models/input.readyplayerme.json -i models/readyplayerme-feminine.glb -o models/readyplayerme-feminine.Tpose.glb
 ````
 
-*glb_T_pose* component can be used to change default pose. Pose configuration can be specified by input config (`--input_config`). Checkout `models/input.*.json` for commonly used configurations. Following example defines "T" pose, there are `rotation` configurations in order to make current pose to "T" pose. All rotations are quaternions and *multiplied* to current rotations when `glb_T_pose` is executed. Bone naming conventions are described in [bone naming conventions](#bone-naming-conventions) section.
+*glb_T_pose* component can be used to change default pose. Pose configuration can be specified by input config (`--input_config`). Checkout `models/input.*.json` for commonly used configurations. Following example defines "T" pose, there are `rotation` configurations in order to make current pose to "T" pose. All rotations are quaternions and *multiplied* to current rotations when `glb_T_pose` is executed. Bone naming conventions are described in [bone naming conventions](#bone-naming-conventions) section. Note that all animations are removed after glb_T_pose because animation "baking" is not working well with default pose changes.
 
 ```js
 "poses":{
