@@ -40,8 +40,11 @@ static bool gltf_override_material_values(json& values, cgltf_material* material
             } else if (value == "BLEND") {
                 material->alpha_mode = cgltf_alpha_mode_blend;
             } else {
-                return false;
+                AVATAR_PIPELINE_LOG("[WARN] Unknown alphaMode: " << value);
+                continue;
             }
+        } else if (item.key() == "doubleSided" && value_object.is_boolean()) {
+            material->double_sided = value_object.get<bool>();
         }
     }
     return true;

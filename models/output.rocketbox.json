@@ -25,7 +25,7 @@
           "find_missing_textures_from": "Female_Adult_01.Textures"
         },
         "values":{
-          "alphaMode":"BLEND"
+          "alphaMode":"MASK"
         }
       }
     ]

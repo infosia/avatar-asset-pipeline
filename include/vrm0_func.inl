@@ -123,6 +123,10 @@ static void vrm0_ensure_floatProperties(const json& materialProperties_object, c
         floatProperties["_BlendMode"] = 0.f;
     }
 
+    if (data->materials[i].double_sided) {
+        floatProperties["_CullMode"] = 0.f;
+    }
+
     vrm->materialProperties[i].floatProperties_count = floatProperties.size();
     if (vrm->materialProperties[i].floatProperties_count > 0) {
         vrm->materialProperties[i].floatProperties_keys = (char**)gltf_calloc(vrm->materialProperties[i].floatProperties_count, sizeof(void*));
@@ -175,9 +179,9 @@ static void vrm0_ensure_mapProperties(const json& materialProperties_object, cgl
     if (data->materials[i].alpha_mode == cgltf_alpha_mode_opaque) {
         tagMap["RenderType"] = "Opaque";
     } else if (data->materials[i].alpha_mode == cgltf_alpha_mode_mask) {
-        tagMap["RenderType"] = "Cutout";
-    } else if (data->materials[i].alpha_mode == cgltf_alpha_mode_blend) {
         tagMap["RenderType"] = "TransparentCutout";
+    } else if (data->materials[i].alpha_mode == cgltf_alpha_mode_blend) {
+        tagMap["RenderType"] = "Transparent";
     }
 
     vrm->materialProperties[i].keywordMap_count = keywordMap.size();

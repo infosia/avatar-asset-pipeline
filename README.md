@@ -192,6 +192,8 @@ Conversion of FBX to glTF using `fbx_pipeline` requires [FBX2glTF executable](ht
 > avatar-build.exe --pipeline pipelines/glb2vrm0_T_pose.json --debug --output_config models/output.vrm0.json -v --input_config models/input.readyplayerme.json -i models/readyplayerme-feminine.glb -o models/readyplayerme-feminine.vrm
 ```
 
+*vrm0_fix_joint_buffer* component is practically needed for VRM spec 0.0 because UniVRM (VRM spec 0.0 reference implementation) does not support unsigned short joint buffer until UniVRM v0.68.0.
+
 ### Convert glTF binary (.glb) to VRM spec 0.0, forcing all jpeg textures to png
 
 This has been needed to support platforms that do not enable jpeg texture such as [Cluster](https://cluster.mu/en/).
