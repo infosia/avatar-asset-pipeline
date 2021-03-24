@@ -101,22 +101,22 @@ Check out `pipelines` directory for working pipeline examples in practice.
 "poses":{
   "T": {
     "LeftUpperArm":  {
-      "rotation": [ -0.5, 0, 0, 0.866 ]
+      "rotation": [ -0.5, 0, 0, 0.866 ] // rotate [-60, 0, 0] degrees (euler angles)
     },
     "RightUpperArm": {
-      "rotation": [ -0.5, 0, 0, 0.866 ]
+      "rotation": [ -0.5, 0, 0, 0.866 ] // rotate [-60, 0, 0] degrees (euler angles)
     },
     "LeftLowerArm": {
-      "rotation": [ 0, 0, -0.128, 0.992 ]
+      "rotation": [ 0, 0, -0.128, 0.992 ] // rotate [0, 0, -15] degrees (euler angles)
     },
     "RightLowerArm": {
-      "rotation": [ 0, 0, 0.128, 0.992 ]
+      "rotation": [ 0, 0, 0.128, 0.992 ] // rotate [0, 0, 15] degrees (euler angles)
     },
     "LeftHand": {
-      "rotation": [ 0, -0.128, 0, 0.992 ]
+      "rotation": [ 0, -0.128, 0, 0.992 ] // rotate [0, -15, 0] degrees (euler angles)
     },
     "RightHand": {
-      "rotation": [ 0, 0.128, 0, 0.992 ]
+      "rotation": [ 0, 0.128, 0, 0.992 ] // rotate [0, 15, 0] degrees (euler angles)
     }
   }
 }
@@ -316,7 +316,7 @@ In output configuration file (which can be specified by `--output_config` option
 
 ### Find and load external material textures
 
-When you use FBX, materials can be defined as external texture image asset and the conversion tool `FBX2glTF` tend to fail to fetch those textures. In order to fetch these missing textures, you can use `find_missing_textures_from` property. It searches for the textures in given directory and tries to load it as glTF buffer. For instance following configuration shows that material textures under `Missing.Textures` directory to be loaded as `f001_body` material.  It searches for the missing textures based on following order in glTF: 1. `image.name` that is linked to the material, 2. `texture.name` that is linked to the material, 3. `material.name`. It also takes *"_color"* suffix into account. Note that only png and jpg textures are supported for now.
+When you use FBX, materials can be defined as external texture image asset and the conversion tool `FBX2glTF` tend to fail to fetch those textures. In order to fetch these missing textures, you can use `find_missing_textures_from` property. It searches for the textures in given directory and tries to load it as glTF buffer. For instance following configuration shows that material textures under `Missing.Textures` directory to be loaded as `f001_body` material.  It searches for the missing textures based on glTF `name` property in following order: 1. `image.name` that is linked to the material, 2. `texture.name` that is linked to the material, 3. `material.name`. It also takes *"_color"* suffix into account. Note that only png and jpg textures are supported for now.
 
 ```js
 "overrides": {
@@ -330,6 +330,42 @@ When you use FBX, materials can be defined as external texture image asset and t
     }
   ]
 }
+```
+
+So let say if you have following glTF property, the configuration above searches for image files under `Missing.Textures` directory in following order:
+
+1. "Image #01" (.png, .jpg, .jpeg )
+2. "Image #01_color" (.png, .jpg, .jpeg )
+3. "Texture #01" (.png, .jpg, .jpeg )
+4. "Texture #01_color" (.png, .jpg, .jpeg )
+3. "f001_body" (.png, .jpg, .jpeg )
+4. "f001_body_color" (.png, .jpg, .jpeg )
+
+```js
+"images": [
+  {
+    "name": "Image #01",
+  }
+]
+...
+"textures": [
+  {
+    "name": "Texture #01",
+    "source": 0
+  }
+]
+ ...
+"materials": [
+  {
+    "name": "f001_body",
+    "pbrMetallicRoughness": {
+      "baseColorTexture": {
+        "index": 0
+      },
+      ...
+    }
+  }
+]
 ```
 
 ## License
