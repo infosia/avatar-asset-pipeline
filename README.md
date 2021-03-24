@@ -101,22 +101,22 @@ Check out `pipelines` directory for working pipeline examples in practice.
 "poses":{
   "T": {
     "LeftUpperArm":  {
-      "rotation": [ -0.5, 0, 0, 0.866 ] // rotate [-60, 0, 0] degrees (euler angles)
+      "rotation": [ -0.5, 0, 0, 0.866 ] // quaternion - it's rotating [-60, 0, 0] degrees in euler angles
     },
     "RightUpperArm": {
-      "rotation": [ -0.5, 0, 0, 0.866 ] // rotate [-60, 0, 0] degrees (euler angles)
+      "rotation": [ -0.5, 0, 0, 0.866 ]
     },
     "LeftLowerArm": {
-      "rotation": [ 0, 0, -0.128, 0.992 ] // rotate [0, 0, -15] degrees (euler angles)
+      "rotation": [ 0, 0, -0.128, 0.992 ]
     },
     "RightLowerArm": {
-      "rotation": [ 0, 0, 0.128, 0.992 ] // rotate [0, 0, 15] degrees (euler angles)
+      "rotation": [ 0, 0, 0.128, 0.992 ]
     },
     "LeftHand": {
-      "rotation": [ 0, -0.128, 0, 0.992 ] // rotate [0, -15, 0] degrees (euler angles)
+      "rotation": [ 0, -0.128, 0, 0.992 ]
     },
     "RightHand": {
-      "rotation": [ 0, 0.128, 0, 0.992 ] // rotate [0, 15, 0] degrees (euler angles)
+      "rotation": [ 0, 0.128, 0, 0.992 ]
     }
   }
 }
