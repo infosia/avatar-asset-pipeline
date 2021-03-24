@@ -4,3 +4,6 @@
 [submodule "extern/reproc"]
 	path = extern/reproc
 	url = https://github.com/infosia/reproc.git
+[submodule "extern/meshoptimizer"]
+	path = extern/meshoptimizer
+	url = https://github.com/infosia/meshoptimizer.git

@@ -47,12 +47,14 @@ target_include_directories(dspatch PRIVATE ${dspatch_INCLUDES})
 set(REPROC++ ON)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/extern/reproc)
 
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/extern/meshoptimizer)
+
 set( EXE_NAME avatar-build )
 add_executable( ${EXE_NAME} ${SRC_FILES} )
 set_property( TARGET ${EXE_NAME} PROPERTY CXX_STANDARD 11 )
 
 target_include_directories(${EXE_NAME} PRIVATE ${BUILD_INCLUDES})
-target_link_libraries(${EXE_NAME} PRIVATE dspatch reproc++)
+target_link_libraries(${EXE_NAME} PRIVATE dspatch reproc++ meshoptimizer gltfpack)
 
 if(MSVC)
     target_compile_options(dspatch PRIVATE /W4 /WX /wd4267)
