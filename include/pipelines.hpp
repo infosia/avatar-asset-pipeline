@@ -33,6 +33,12 @@ static bool pipeline_verbose_enabled = false;
 
 #define AVATAR_PIPELINE_LOG(msg)  if (pipeline_verbose_enabled) std::cout << msg << std::endl;
 
+static fs::path path_without_extension(std::string fullpath)
+{
+    fs::path p = fullpath;
+    return p.parent_path() / p.stem();
+}
+
 namespace AvatarBuild {
 
 struct cmd_options {

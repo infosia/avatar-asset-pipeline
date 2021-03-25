@@ -30,17 +30,17 @@
 
 namespace AvatarBuild {
 
-class fbx_pipeline final : public pipeline_processor {
+class gltfpack_pipeline final : public pipeline_processor {
 
 public:
-    fbx_pipeline(std::string name, cmd_options* options)
+    gltfpack_pipeline(std::string name, cmd_options* options)
         : pipeline_processor(name, options)
     {
         SetInputCount_(1);  // <bool> discarded
         SetOutputCount_(1); // <bool> discarded
     }
 
-    virtual ~fbx_pipeline()
+    virtual ~gltfpack_pipeline()
     {
 
     }
@@ -54,16 +54,18 @@ protected:
             return;
         }
 
-        AVATAR_PIPELINE_LOG("[INFO] fbx_pipeline start");
+        AVATAR_PIPELINE_LOG("[INFO] gltfpack_pipeline start");
+
+        // assuming gltf_pipeline is executed before gltfpack
+        options->input   = options->output;
+        options->output  = path_without_extension(options->output).u8string() + ".LOD0" + fs::path(options->output).extension().u8string();
 
         circuit->Tick(DSPatch::Component::TickMode::Series);
        
         outputs.SetValue(0, tick_result->is_discarded());
 
         if (!tick_result->is_discarded()) {
-            AVATAR_PIPELINE_LOG("[INFO] fbx_pipeline finished without errors");
-            // redirect fbx pipeline output to gltf pipeline input. assuming gltf_pipeline is executed next
-           options->input = path_without_extension(options->output).u8string() + ".fbx2glb.glb";
+            AVATAR_PIPELINE_LOG("[INFO] gltfpack_pipeline finished without errors");
         }
     }
 };

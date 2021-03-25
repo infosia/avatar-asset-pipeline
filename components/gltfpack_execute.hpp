@@ -22,50 +22,62 @@
  */
 #pragma once
 
-#include "DSPatch.h"
+#include "gltfpackapi.h"
 #include "pipelines.hpp"
-#include <string>
+#include <DSPatch.h>
 #include <iostream>
-#include <vector>
 
-namespace AvatarBuild {
+namespace DSPatch {
 
-class fbx_pipeline final : public pipeline_processor {
+class gltfpack_execute final : public Component {
 
 public:
-    fbx_pipeline(std::string name, cmd_options* options)
-        : pipeline_processor(name, options)
+    gltfpack_execute(AvatarBuild::cmd_options* options)
+        : Component()
+        , options(options)
     {
-        SetInputCount_(1);  // <bool> discarded
-        SetOutputCount_(1); // <bool> discarded
+        SetInputCount_(1);
+        SetOutputCount_(1);
     }
 
-    virtual ~fbx_pipeline()
+    virtual ~gltfpack_execute()
     {
-
     }
 
 protected:
-    virtual void Process_(DSPatch::SignalBus const& inputs, DSPatch::SignalBus& outputs) override
+    Settings defaults()
+    {
+        Settings settings = {};
+        settings.quantize = false;
+        settings.pos_bits = 14;
+        settings.tex_bits = 12;
+        settings.nrm_bits = 8;
+        settings.col_bits = 8;
+        settings.trn_bits = 16;
+        settings.rot_bits = 12;
+        settings.scl_bits = 16;
+        settings.anim_freq = 30;
+        settings.simplify_threshold = 0.7f;
+        settings.texture_quality = 8;
+        settings.texture_scale = 1.f;
+
+        settings.use_uint8_joints = false;
+
+        return settings;
+    }
+
+    virtual void Process_(SignalBus const& inputs, SignalBus& outputs) override
     {
         // just return immediately when there's critical error in previous component
         const auto discarded = inputs.GetValue<bool>(0);
         if (discarded && *discarded) {
             return;
         }
+        AVATAR_PIPELINE_LOG("[INFO] gltfpack_execute");
 
-        AVATAR_PIPELINE_LOG("[INFO] fbx_pipeline start");
-
-        circuit->Tick(DSPatch::Component::TickMode::Series);
-       
-        outputs.SetValue(0, tick_result->is_discarded());
-
-        if (!tick_result->is_discarded()) {
-            AVATAR_PIPELINE_LOG("[INFO] fbx_pipeline finished without errors");
-            // redirect fbx pipeline output to gltf pipeline input. assuming gltf_pipeline is executed next
-           options->input = path_without_extension(options->output).u8string() + ".fbx2glb.glb";
-        }
+        outputs.SetValue(0, gltfpack(options->input.c_str(), options->output.c_str(), nullptr, defaults()) != 0);
     }
+    AvatarBuild::cmd_options* options;
 };
 
-} // namespace Avatar
+} // namespace DSPatch

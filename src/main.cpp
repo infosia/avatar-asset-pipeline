@@ -47,6 +47,9 @@
 #include "verbalexpressions.hpp"
 #pragma warning(pop)
 
+#include <ghc/filesystem.hpp>
+
+namespace fs = ghc::filesystem;
 using json = nlohmann::json;
 
 #include "pipelines.hpp"
@@ -65,6 +68,8 @@ using json = nlohmann::json;
 #include "vrm0_default_extensions.hpp"
 #include "vrm0_remove_extensions.hpp"
 #include "gltf_pipeline.hpp"
+#include "gltfpack_execute.hpp"
+#include "gltfpack_pipeline.hpp"
 #include "noop.hpp"
 
 #include "fbx2gltf_execute.hpp"
@@ -94,6 +99,8 @@ static std::shared_ptr<DSPatch::Component> create_component(std::string name, cm
         return std::make_shared<DSPatch::vrm0_remove_extensions>(options);
     } else if (name == "fbx2gltf_execute") {
         return std::make_shared<DSPatch::fbx2gltf_execute>(options);
+    } else if (name == "gltfpack_execute") {
+        return std::make_shared<DSPatch::gltfpack_execute>(options);
     }
     return std::make_shared<DSPatch::noop>(options, name);
 }
@@ -104,6 +111,8 @@ static std::shared_ptr<pipeline_processor> create_pipeline(std::string name, cmd
         return std::make_shared<AvatarBuild::gltf_pipeline>(name, options);
     } else if (name == "fbx_pipeline") {
         return std::make_shared<AvatarBuild::fbx_pipeline>(name, options);
+    } else if (name == "gltfpack_pipeline") {
+        return std::make_shared<AvatarBuild::gltfpack_pipeline>(name, options);
     }
     return std::make_shared<AvatarBuild::pipeline_processor>(name, options);
 }

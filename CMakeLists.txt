@@ -23,6 +23,8 @@ set (BUILD_INCLUDES
   ${CMAKE_CURRENT_SOURCE_DIR}/extern/glm
   ${CMAKE_CURRENT_SOURCE_DIR}/extern/ghc
   ${CMAKE_CURRENT_SOURCE_DIR}/extern/dspatch/include
+  ${CMAKE_CURRENT_SOURCE_DIR}/extern/meshoptimizer/src
+  ${CMAKE_CURRENT_SOURCE_DIR}/extern/meshoptimizer/gltf
 )
 
 file(GLOB dspatch_root_INCLUDES extern/dspatch/include/*.h)

@@ -21,10 +21,7 @@
  * SOFTWARE.
  */
 
-#include <ghc/filesystem.hpp>
 #include <tuple>
-
-namespace fs = ghc::filesystem;
 
 static bool gltf_override_material_values(json& values, cgltf_material* material)
 {
