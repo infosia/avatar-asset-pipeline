@@ -21,5 +21,8 @@ jobs:
     - name: Build
       run: msbuild /m /p:Configuration=Release avatar-asset-pipeline.sln
 
-    - name: Test
+    - name: Test with --debug
       run: Release/avatar-build.exe --pipeline pipelines/glb2vrm0_T_pose.json --debug --output_config models/output.vrm0.json -v --input_config models/input.readyplayerme.json -i models/readyplayerme-feminine.glb -o models/readyplayerme-feminine.vrm
+
+    - name: Test without --debug
+      run: Release/avatar-build.exe --pipeline pipelines/glb2vrm0_T_pose.json --output_config models/output.vrm0.json -v --input_config models/input.readyplayerme.json -i models/readyplayerme-feminine.glb -o models/readyplayerme-feminine.vrm

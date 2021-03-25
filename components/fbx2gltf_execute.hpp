@@ -30,8 +30,6 @@
 
 static inline int run_fbx2gltf(AvatarBuild::cmd_options* options)
 {
-    std::string output = path_without_extension(options->output).u8string() + ".fbx2glb.glb";
-
     std::vector<std::string> arguments;
 
     arguments.push_back(options->fbx2gltf);
@@ -41,7 +39,7 @@ static inline int run_fbx2gltf(AvatarBuild::cmd_options* options)
     arguments.push_back("--input");
     arguments.push_back(options->input);
     arguments.push_back("--output");
-    arguments.push_back(output);
+    arguments.push_back(options->output);
 
     reproc::arguments reproc_args(arguments);
     reproc::options reproc_options = {};

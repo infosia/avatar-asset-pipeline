@@ -61,7 +61,10 @@ protected:
         options->output  = path_without_extension(options->output).u8string() + ".LOD0" + fs::path(options->output).extension().u8string();
 
         circuit->Tick(DSPatch::Component::TickMode::Series);
-       
+
+        // assuming gltf_pipeline is executed next
+        options->input = options->output;
+
         outputs.SetValue(0, tick_result->is_discarded());
 
         if (!tick_result->is_discarded()) {

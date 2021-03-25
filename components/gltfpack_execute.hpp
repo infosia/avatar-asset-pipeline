@@ -61,7 +61,12 @@ protected:
         settings.texture_quality = 8;
         settings.texture_scale = 1.f;
 
+        //settings.keep_extras = true;
+        //settings.keep_materials = true;
+        //settings.keep_nodes = true;
+
         settings.use_uint8_joints = false;
+        settings.use_uint8_weights = false;
 
         return settings;
     }

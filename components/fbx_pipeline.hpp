@@ -56,14 +56,19 @@ protected:
 
         AVATAR_PIPELINE_LOG("[INFO] fbx_pipeline start");
 
+        if (options->debug) {
+            options->output = path_without_extension(options->output).u8string() + ".fbx2glb.glb";
+        }
+
         circuit->Tick(DSPatch::Component::TickMode::Series);
        
         outputs.SetValue(0, tick_result->is_discarded());
 
         if (!tick_result->is_discarded()) {
             AVATAR_PIPELINE_LOG("[INFO] fbx_pipeline finished without errors");
-            // redirect fbx pipeline output to gltf pipeline input. assuming gltf_pipeline is executed next
-           options->input = path_without_extension(options->output).u8string() + ".fbx2glb.glb";
+
+            // redirect fbx pipeline output to next input. assuming gltf_pipeline is executed next
+            options->input = options->output;
         }
     }
 };
