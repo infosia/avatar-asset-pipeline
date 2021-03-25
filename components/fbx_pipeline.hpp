@@ -56,6 +56,8 @@ protected:
 
         AVATAR_PIPELINE_LOG("[INFO] fbx_pipeline start");
 
+        const std::string output = options->output;
+
         if (options->debug) {
             options->output = path_without_extension(options->output).u8string() + ".fbx2glb.glb";
         }
@@ -69,6 +71,7 @@ protected:
 
             // redirect fbx pipeline output to next input. assuming gltf_pipeline is executed next
             options->input = options->output;
+            options->output = output;
         }
     }
 };
