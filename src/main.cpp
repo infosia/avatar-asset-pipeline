@@ -244,6 +244,9 @@ int main(int argc, char** argv)
 
     cmd_options options = { config, input, output, input_config, output_config, fbx2gltf, verbose, debug, gltf_options };
 
+    json_parse(options.input_config, &options.input_config_json);
+    json_parse(options.output_config, &options.output_config_json);
+
     int status = 0;
     if (!start_pipelines(&options)) {
         status = 1;

@@ -70,8 +70,8 @@ protected:
             cgltf_data* data = *data_ptr;
             AvatarBuild::bone_mappings* mappings = *bones_ptr;
 
-            json vrm0_config;
-            if (json_parse(options->output_config, &vrm0_config) && vrm0_config["defaults"].is_object()) {
+            json vrm0_config = options->output_config_json;
+            if (vrm0_config["defaults"].is_object()) {
                 auto vrm0_defaults = vrm0_config["defaults"];
 
                 vrm0_update_bones(mappings, data);

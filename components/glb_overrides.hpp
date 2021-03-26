@@ -59,9 +59,8 @@ protected:
         if (data_ptr && bones_ptr) {
             cgltf_data* data = *data_ptr;
 
-
-            json gltf_config;
-            if (json_parse(options->output_config, &gltf_config) && gltf_config["overrides"].is_object()) {
+            json gltf_config = options->output_config_json;
+            if (gltf_config["overrides"].is_object()) {
                 auto gltf_overrides = gltf_config["overrides"];
                 if (gltf_overrides.is_object()) {
                     gltf_override_parameters(gltf_overrides, data, options);

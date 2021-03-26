@@ -172,16 +172,9 @@ static std::unordered_map<std::string, AvatarBuild::pose> gltf_parse_bone_poses(
 
 static bool gltf_parse_bone_mappings(cgltf_data* data, AvatarBuild::bone_mappings* mappings, AvatarBuild::cmd_options* options)
 {
-    (void)data, mappings;
-
-    json j;
-    if (!json_parse(options->input_config, &j)) {
-        return false;
-    }
-
     try {
-        mappings->poses = gltf_parse_bone_poses(j["poses"]);
-        gltf_parse_bones_to_node(j, data, mappings);
+        mappings->poses = gltf_parse_bone_poses(options->input_config_json["poses"]);
+        gltf_parse_bones_to_node(options->input_config_json, data, mappings);
     } catch (json::exception&) {
         return false;
     }

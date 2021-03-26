@@ -51,6 +51,9 @@ struct cmd_options {
     bool verbose;
     bool debug;
     cgltf_options gltf_options;
+    
+    nlohmann::json input_config_json;
+    nlohmann::json output_config_json;
 };
 
 struct pipeline {
