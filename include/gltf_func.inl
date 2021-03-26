@@ -182,11 +182,13 @@ static bool gltf_update_joint_buffer(cgltf_accessor* joints)
         return false;
 
     const cgltf_size new_buffer_view_size = joints->count * 4 * sizeof(std::uint16_t);
-    std::uint16_t* joints_data = (std::uint16_t*)gltf_calloc(joints->count * 4, sizeof(std::uint16_t));
+    std::uint16_t* joints_data = (std::uint16_t*)gltf_calloc(1, new_buffer_view_size);
     for (cgltf_size i = 0; i < joints->count; ++i) {
         cgltf_uint out[4];
-        if (!cgltf_accessor_read_uint(joints, i, out, 4))
+        if (!cgltf_accessor_read_uint(joints, i, out, 4)) {
+            gltf_free(joints_data);
             return false;
+        }
         auto data = (joints_data + (i * 4));
         data[0] = static_cast<std::uint16_t>(out[0]);
         data[1] = static_cast<std::uint16_t>(out[1]);

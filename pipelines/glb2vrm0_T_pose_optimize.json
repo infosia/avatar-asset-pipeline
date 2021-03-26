@@ -1,0 +1,29 @@
+{
+  "name":"glb2vrm0_T_pose",
+  "description":"Convert A-pose to T-pose, glTF binary (.glb) to VRM spec 0.0",
+  "pipelines":[
+    {
+      "name":"gltf_pipeline",
+      "components":[
+        "glb_T_pose",
+        "glb_transforms_apply",
+        "glb_overrides"
+      ]
+    },
+    {
+      "name":"gltfpack_pipeline",
+      "components":[
+        "gltfpack_execute"
+      ]
+    },
+    {
+      "name":"gltf_pipeline",
+      "components":[
+        "glb_z_reverse",
+        "glb_jpeg_to_png",
+        "vrm0_fix_joint_buffer",
+        "vrm0_default_extensions"
+      ]
+    }
+  ]
+}
