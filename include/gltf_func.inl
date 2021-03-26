@@ -177,6 +177,10 @@ static bool gltf_remove_animation(cgltf_data* data)
 
 static bool gltf_update_joint_buffer(cgltf_accessor* joints)
 {
+    // check if joint buffer needs to be updated
+    if (joints->component_type == cgltf_component_type_r_16u)
+        return false;
+
     const cgltf_size new_buffer_view_size = joints->count * 4 * sizeof(std::uint16_t);
     std::uint16_t* joints_data = (std::uint16_t*)gltf_calloc(joints->count * 4, sizeof(std::uint16_t));
     for (cgltf_size i = 0; i < joints->count; ++i) {
@@ -251,6 +255,7 @@ static bool gltf_create_buffer(cgltf_data* data)
 
 static bool gltf_upcast_joints(cgltf_data* data)
 {
+    cgltf_size update_count = 0;
     std::set<cgltf_accessor*> accessor_coord_done;
     for (cgltf_size i = 0; i < data->nodes_count; ++i) {
         const auto node = &data->nodes[i];
@@ -269,14 +274,15 @@ static bool gltf_upcast_joints(cgltf_data* data)
                     continue;
                 }
                 if (attr->name && strcmp(attr->name, "JOINTS_0") == 0) {
-                    gltf_update_joint_buffer(accessor);
+                    if (gltf_update_joint_buffer(accessor))
+                        ++update_count;
                 }
                 accessor_coord_done.emplace(accessor);
             }
         }
     }
 
-    return gltf_create_buffer(data);
+    return (update_count > 0 ? gltf_create_buffer(data) : true);
 }
 
 static void gltf_reverse_z_accessor(cgltf_accessor* accessor)
