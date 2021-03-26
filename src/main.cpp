@@ -213,7 +213,7 @@ int main(int argc, char** argv)
     std::string input_config;
     app.add_option("-m,--input_config", input_config, "Input configuration file name (JSON)");
 
-    std::string output_config = "models/output.vrm0.json";
+    std::string output_config;
     app.add_option("-n,--output_config", output_config, "Output configuration file name (JSON)");
 
     std::string fbx2gltf = "extern/fbx2gltf.exe";
@@ -223,7 +223,7 @@ int main(int argc, char** argv)
 
     // common mistake
     if (input == output) {
-        std::cout << "[ERROR] Input and Output file should not be same: " << input << std::endl;
+        AVATAR_PIPELINE_LOG("[ERROR] Input and Output file should not be same: " << input);
         return 1;
     }
 
@@ -244,8 +244,14 @@ int main(int argc, char** argv)
 
     cmd_options options = { config, input, output, input_config, output_config, fbx2gltf, verbose, debug, gltf_options };
 
-    json_parse(options.input_config, &options.input_config_json);
-    json_parse(options.output_config, &options.output_config_json);
+    if (!options.input_config.empty() && !json_parse(options.input_config, &options.input_config_json)) {
+        AVATAR_PIPELINE_LOG("[ERROR] Unable to load " << input);
+        return 1;
+    }
+    if (!options.output_config.empty() && !json_parse(options.output_config, &options.output_config_json)) {
+        AVATAR_PIPELINE_LOG("[ERROR] Unable to load " << output);
+        return 1;
+    }
 
     int status = 0;
     if (!start_pipelines(&options)) {

@@ -55,12 +55,6 @@ protected:
             return;
         }
 
-        if (options->output_config.empty()) {
-            AVATAR_PIPELINE_LOG("[ERROR] output configuratioin is not specified. Use --output_config [file] option to specify output config");
-            outputs.SetValue(0, true);    // discarded
-            return;
-        }
-
         AVATAR_PIPELINE_LOG("[INFO] vrm0_default_extensions");
 
         const auto data_ptr = inputs.GetValue<cgltf_data*>(1);
