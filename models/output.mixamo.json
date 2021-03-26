@@ -11,7 +11,7 @@
       }
     ]
   },
-  "defaults":{
+  "VRM":{
     "meta":{
       "title":"Test Avatar",
       "version":"0.0.1",
