@@ -146,7 +146,7 @@ protected:
             }
         }
 
-        outputs.SetValue(0, count > 0); // discarded
+        outputs.SetValue(0, count == 0); // discarded
     }
     AvatarBuild::cmd_options* options;
 };
