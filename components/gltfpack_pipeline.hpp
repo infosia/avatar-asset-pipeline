@@ -56,14 +56,7 @@ protected:
 
         AVATAR_PIPELINE_LOG("[INFO] gltfpack_pipeline start");
 
-        // assuming gltf_pipeline is executed before gltfpack
-        options->input   = options->output;
-        options->output  = path_without_extension(options->output).u8string() + ".LOD0" + fs::path(options->output).extension().u8string();
-
         circuit->Tick(DSPatch::Component::TickMode::Series);
-
-        // assuming gltf_pipeline is executed next
-        options->input = options->output;
 
         outputs.SetValue(0, tick_result->is_discarded());
 

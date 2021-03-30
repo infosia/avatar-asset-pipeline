@@ -1,4 +1,32 @@
 {
+  "gltfpack": {
+    "LOD": [
+      {
+        "name": "LOD2",
+        "simplity_threshold": 0.7,
+        "simplify_aggressive": false
+      },
+      {
+        "name": "LOD1",
+        "simplity_threshold": 0.5,
+        "simplify_aggressive": false
+      },
+      {
+        "name": "LOD0",
+        "simplity_threshold": 0.3,
+        "simplify_aggressive": false
+      }
+    ],
+    "defaults": {
+      "verbose": true,
+      "quantize": false,
+      "use_uint8_joints": false,
+      "use_uint8_weights": false,
+      "keep_extras": true,
+      "keep_materials": false,
+      "keep_nodes": false
+    }
+  },
   "VRM":{
     "meta":{
       "title":"Test Avatar",

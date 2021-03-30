@@ -45,7 +45,12 @@ public:
     }
 
 protected:
-    Settings defaults()
+    json select_value(std::string name, json item, json items_defaults)
+    {
+        return item[name].is_null() ? items_defaults[name] : item[name];
+    }
+
+    Settings defaults(json item, json items_defaults)
     {
         Settings settings = {};
         settings.quantize = false;
@@ -57,16 +62,55 @@ protected:
         settings.rot_bits = 12;
         settings.scl_bits = 16;
         settings.anim_freq = 30;
-        settings.simplify_threshold = 0.7f;
+        settings.simplify_threshold = 1.f;
+        settings.simplify_aggressive = false;
         settings.texture_quality = 8;
         settings.texture_scale = 1.f;
+        settings.verbose = false;
 
-        //settings.keep_extras = true;
-        //settings.keep_materials = true;
-        //settings.keep_nodes = true;
+        settings.keep_extras = true;
+        settings.keep_materials = false;
+        settings.keep_nodes = false;
 
         settings.use_uint8_joints = false;
         settings.use_uint8_weights = false;
+
+        auto simplity_threshold = select_value("simplity_threshold", item, items_defaults);
+        auto simplify_aggressive = select_value("simplity_threshold", item, items_defaults);
+        auto quantize = select_value("quantize", item, items_defaults);
+        auto verbose = select_value("verbose", item, items_defaults);
+        auto keep_extras = select_value("keep_extras", item, items_defaults);
+        auto keep_materials = select_value("keep_materials", item, items_defaults);
+        auto keep_nodes = select_value("keep_nodes", item, items_defaults);
+        auto use_uint8_joints = select_value("use_uint8_joints", item, items_defaults);
+        auto use_uint8_weights = select_value("use_uint8_weights", item, items_defaults);
+
+        if (simplity_threshold.is_number())
+            settings.simplify_threshold = simplity_threshold.get<float>();
+
+        if (simplify_aggressive.is_boolean())
+            settings.simplify_aggressive = simplify_aggressive.get<bool>();
+
+        if (quantize.is_boolean())
+            settings.quantize = quantize.get<bool>();
+
+        if (verbose.is_boolean())
+            settings.verbose = verbose.get<bool>();
+
+        if (keep_extras.is_boolean())
+            settings.keep_extras = keep_extras.get<bool>();
+
+        if (keep_materials.is_boolean())
+            settings.keep_materials = keep_materials.get<bool>();
+
+        if (keep_nodes.is_boolean())
+            settings.keep_nodes = keep_nodes.get<bool>();
+
+        if (use_uint8_joints.is_boolean())
+            settings.use_uint8_joints = use_uint8_joints.get<bool>();
+
+        if (use_uint8_weights.is_boolean())
+            settings.use_uint8_weights = use_uint8_weights.get<bool>();
 
         return settings;
     }
@@ -80,7 +124,29 @@ protected:
         }
         AVATAR_PIPELINE_LOG("[INFO] gltfpack_execute");
 
-        outputs.SetValue(0, gltfpack(options->input.c_str(), options->output.c_str(), nullptr, defaults()) != 0);
+        size_t count = 0;
+        const auto gltfpack_obj = options->output_config_json["gltfpack"];
+        if (gltfpack_obj.is_object()) {
+            const auto items = gltfpack_obj["LOD"];
+            const auto items_defaults = gltfpack_obj["defaults"];
+            if (items.is_array()) {
+                const auto size = items.size();
+                for (size_t i = 0; i < size; ++i) {
+                    const auto item = items[i];
+                    const auto name_LOD = item["name"].is_string() ? item["name"].get<std::string>() : "LOD" + std::to_string(i);
+                    const auto output_LOD = path_without_extension(options->output).u8string() + "." + name_LOD + fs::path(options->output).extension().u8string();
+
+                    // use options->output for source assuming gltf_pipeline is executed before gltfpack
+                    if (gltfpack(options->output.c_str(), output_LOD.c_str(), nullptr, defaults(item, items_defaults)) != 0) {
+                        AVATAR_PIPELINE_LOG("[ERROR] failed to execute gltfpack for " << name_LOD << ". Skipping.");
+                    } else {
+                        ++count;
+                    }
+                }
+            }
+        }
+
+        outputs.SetValue(0, count > 0); // discarded
     }
     AvatarBuild::cmd_options* options;
 };
