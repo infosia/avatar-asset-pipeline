@@ -196,7 +196,7 @@ int main(int argc, char** argv)
     CLI::App app { "avatar-build: Run avatar asset pipeline" };
 
     std::string config = "pipelines/config.json";
-    app.add_option("-p,--pipeline", config, "Pipeline configuration file name (JSON)");
+    app.add_option("-p,--pipeline", config, "Pipeline configuration file name (JSON)")->required();
 
     bool verbose = false;
     app.add_flag("-v,--verbose", verbose, "Verbose log output");
@@ -204,11 +204,11 @@ int main(int argc, char** argv)
     bool debug = false;
     app.add_flag("-d,--debug", debug, "Enable debug output");
 
-    std::string input = "input.glb";
-    app.add_option("-i,--input", input, "Input file name")->check(CLI::ExistingFile);
+    std::string input;
+    app.add_option("-i,--input", input, "Input file name")->check(CLI::ExistingFile)->required();
 
-    std::string output = "output.glb";
-    app.add_option("-o,--output", output, "Output file name");
+    std::string output;
+    app.add_option("-o,--output", output, "Output file name")->required();
 
     std::string input_config;
     app.add_option("-m,--input_config", input_config, "Input configuration file name (JSON)");
@@ -245,11 +245,11 @@ int main(int argc, char** argv)
     cmd_options options = { config, input, output, input_config, output_config, fbx2gltf, verbose, debug, gltf_options };
 
     if (!options.input_config.empty() && !json_parse(options.input_config, &options.input_config_json)) {
-        AVATAR_PIPELINE_LOG("[ERROR] Unable to load " << input);
+        AVATAR_PIPELINE_LOG("[ERROR] Unable to load " << options.input_config);
         return 1;
     }
     if (!options.output_config.empty() && !json_parse(options.output_config, &options.output_config_json)) {
-        AVATAR_PIPELINE_LOG("[ERROR] Unable to load " << output);
+        AVATAR_PIPELINE_LOG("[ERROR] Unable to load " << options.output_config);
         return 1;
     }
 
