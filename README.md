@@ -54,14 +54,14 @@ Check out `pipelines` directory for working pipeline examples in practice.
 - [x] Pack external textures
 - [x] Update material properties
 - [x] Update VRM properties
-- [ ] Create multiple Level of Details (LOD)
-- [ ] Pack multiple LOD into glTF (MSFT_lod)
-- [ ] Index optimization
-- [ ] Vertex cache optimization
-- [ ] Overdraw optimization
-- [ ] Vertex fetch optimization
-- [ ] Vertex quantization
-- [ ] Vertex/index buffer compression
+- [x] Create multiple Level of Details (LOD)
+- [x] Index optimization
+- [x] Vertex cache optimization
+- [x] Overdraw optimization
+- [x] Vertex fetch optimization
+- [x] Vertex quantization
+- [x] Vertex/index buffer compression
+- [ ] Pack multiple LOD into glTF binary (MSFT_lod)
 
 ## Tested Platforms
 
@@ -367,6 +367,81 @@ So let say if you have following glTF property, the configuration above searches
   }
 ]
 ```
+
+## Create Level of Details (LOD)
+
+`gltfpack_pipeline` pipeline implements an ability to run mesh optimization using [gltfpack](https://github.com/infosia/meshoptimizer/tree/VRM/gltf#-gltfpack) for your glTF file. For instance following pipeline creates multiple Level of Details (LOD) from glTF binary and converts them to VRM.
+
+```js
+{
+  "name":"glb2vrm0_T_pose_optimize",
+  "description":"A-pose to T-pose, apply transforms, optimize it and convert glTF binary (.glb) to VRM spec 0.0",
+  "pipelines":[
+    {
+      "name":"gltf_pipeline",
+      "description": "Create glTF binary",
+      "components":[
+        "glb_T_pose",
+        "glb_transforms_apply",
+        "glb_overrides"
+      ]
+    },
+    {
+      "name":"gltfpack_pipeline",
+      "description": "Optimize glTF",
+      "components":[
+        "gltfpack_execute"
+      ]
+    },
+    {
+      "name":"gltf_pipeline",
+      "description": "Create VRM",
+      "components":[
+        "glb_z_reverse",
+        "glb_jpeg_to_png",
+        "vrm0_fix_joint_buffer",
+        "vrm0_default_extensions"
+      ]
+    }
+  ]
+}
+```
+
+ You can setup optimization configuration by editing `gltfpack` property section in output config file. For instance in following JSON config, the `LOD` property defines multiple Level of Details (LOD0, LOD1, LOD2) with simplity threashold (0.3, 0.5, 0.7). For options and more information about checkout [meshoptimizer](https://github.com/infosia/meshoptimizer/) and  [gltfpack](https://github.com/infosia/meshoptimizer/tree/VRM/gltf#-gltfpack) documents.
+
+ ```js
+ {
+  "gltfpack": {
+    "LOD": [
+      {
+        "name": "LOD2",
+        "simplity_threshold": 0.7,
+        "simplify_aggressive": false
+      },
+      {
+        "name": "LOD1",
+        "simplity_threshold": 0.5,
+        "simplify_aggressive": false
+      },
+      {
+        "name": "LOD0",
+        "simplity_threshold": 0.3,
+        "simplify_aggressive": false
+      }
+    ],
+    "defaults": {
+      "verbose": true,
+      "quantize": false,
+      "use_uint8_joints": false,
+      "use_uint8_weights": false,
+      "keep_extras": true,
+      "keep_materials": false,
+      "keep_nodes": false
+    }
+  }
+  ...
+}
+ ```
 
 ## License
 

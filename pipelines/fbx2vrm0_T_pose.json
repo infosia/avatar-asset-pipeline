@@ -4,12 +4,14 @@
   "pipelines":[
     {
       "name":"fbx_pipeline",
+      "description": "Convert FBX to glTF binary",
       "components":[
         "fbx2gltf_execute"
       ]
     }, 
     {
       "name":"gltf_pipeline",
+      "description": "A-pose to T-pose & Convert glTF binary to VRM spec 0.0",
       "components":[
         "glb_T_pose",
         "glb_transforms_apply",

@@ -1,9 +1,10 @@
 {
-  "name":"glb2vrm0_T_pose",
-  "description":"Convert A-pose to T-pose, glTF binary (.glb) to VRM spec 0.0",
+  "name":"glb2vrm0_T_pose_optimize",
+  "description":"A-pose to T-pose, apply transforms, optimize it and convert glTF binary (.glb) to VRM spec 0.0",
   "pipelines":[
     {
       "name":"gltf_pipeline",
+      "description": "Create glTF binary",
       "components":[
         "glb_T_pose",
         "glb_transforms_apply",
@@ -12,12 +13,14 @@
     },
     {
       "name":"gltfpack_pipeline",
+      "description": "Optimize glTF",
       "components":[
         "gltfpack_execute"
       ]
     },
     {
       "name":"gltf_pipeline",
+      "description": "Create VRM",
       "components":[
         "glb_z_reverse",
         "glb_jpeg_to_png",

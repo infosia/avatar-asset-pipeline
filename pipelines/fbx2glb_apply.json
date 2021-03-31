@@ -4,12 +4,14 @@
   "pipelines":[
     {
       "name":"fbx_pipeline",
+      "description": "Convert FBX to glTF binary",
       "components":[
         "fbx2gltf_execute"
       ]
     }, 
     {
       "name":"gltf_pipeline",
+      "description": "Apply node transforms",
       "components":[
         "glb_transforms_apply"
       ]

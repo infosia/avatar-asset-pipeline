@@ -1,0 +1,22 @@
+{
+  "name":"glb_T_pose_optimize",
+  "description":"Convert A-pose to T-pose, apply transforms and optimize glTF binary (.glb)",
+  "pipelines":[
+    {
+      "name":"gltf_pipeline",
+      "description": "Create glTF binary",
+      "components":[
+        "glb_T_pose",
+        "glb_transforms_apply",
+        "glb_overrides"
+      ]
+    },
+    {
+      "name":"gltfpack_pipeline",
+      "description": "Optimize glTF",
+      "components":[
+        "gltfpack_execute"
+      ]
+    }
+  ]
+}
