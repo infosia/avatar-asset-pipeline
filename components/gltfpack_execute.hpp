@@ -75,8 +75,8 @@ protected:
         settings.use_uint8_joints = false;
         settings.use_uint8_weights = false;
 
-        auto simplity_threshold = select_value("simplity_threshold", item, items_defaults);
-        auto simplify_aggressive = select_value("simplity_threshold", item, items_defaults);
+        auto simplify_threshold = select_value("simplify_threshold", item, items_defaults);
+        auto simplify_aggressive = select_value("simplify_aggressive", item, items_defaults);
         auto quantize = select_value("quantize", item, items_defaults);
         auto verbose = select_value("verbose", item, items_defaults);
         auto keep_extras = select_value("keep_extras", item, items_defaults);
@@ -85,8 +85,8 @@ protected:
         auto use_uint8_joints = select_value("use_uint8_joints", item, items_defaults);
         auto use_uint8_weights = select_value("use_uint8_weights", item, items_defaults);
 
-        if (simplity_threshold.is_number())
-            settings.simplify_threshold = simplity_threshold.get<float>();
+        if (simplify_threshold.is_number())
+            settings.simplify_threshold = simplify_threshold.get<float>();
 
         if (simplify_aggressive.is_boolean())
             settings.simplify_aggressive = simplify_aggressive.get<bool>();

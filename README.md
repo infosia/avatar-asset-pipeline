@@ -407,7 +407,7 @@ So let say if you have following glTF property, the configuration above searches
 }
 ```
 
- You can setup optimization configuration by editing `gltfpack` property section in output config file. For instance in following JSON config, the `LOD` property defines multiple Level of Details (LOD0, LOD1, LOD2) with simplity threashold (0.3, 0.5, 0.7). For options and more information about checkout [meshoptimizer](https://github.com/infosia/meshoptimizer/) and  [gltfpack](https://github.com/infosia/meshoptimizer/tree/VRM/gltf#-gltfpack) documents.
+ You can setup optimization configuration by editing `gltfpack` property section in output config file. For instance in following JSON config, the `LOD` property defines multiple Level of Details (LOD0, LOD1, LOD2) with simplify threshold (0.3, 0.5, 0.7). For options and more information check out [meshoptimizer](https://github.com/infosia/meshoptimizer/) and [gltfpack](https://github.com/infosia/meshoptimizer/tree/VRM/gltf#-gltfpack) documents.
 
  ```js
  {
@@ -415,25 +415,25 @@ So let say if you have following glTF property, the configuration above searches
     "LOD": [
       {
         "name": "LOD2",
-        "simplity_threshold": 0.7,
+        "simplify_threshold": 0.7,
         "simplify_aggressive": false
       },
       {
         "name": "LOD1",
-        "simplity_threshold": 0.5,
+        "simplify_threshold": 0.5,
         "simplify_aggressive": false
       },
       {
         "name": "LOD0",
-        "simplity_threshold": 0.3,
+        "simplify_threshold": 0.3,
         "simplify_aggressive": false
       }
     ],
     "defaults": {
       "verbose": true,
       "quantize": false,
-      "use_uint8_joints": false,
-      "use_uint8_weights": false,
+      "use_uint8_joints": false, // Force use of float for joint buffer. Required for VRM (Before UniVRM 0.68)
+      "use_uint8_weights": false, // Force use of float for weight buffer. Required for VRM (Before UniVRM 0.70)
       "keep_extras": true,
       "keep_materials": false,
       "keep_nodes": false

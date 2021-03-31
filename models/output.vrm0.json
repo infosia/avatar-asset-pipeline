@@ -3,17 +3,17 @@
     "LOD": [
       {
         "name": "LOD2",
-        "simplity_threshold": 0.7,
+        "simplify_threshold": 0.7,
         "simplify_aggressive": false
       },
       {
         "name": "LOD1",
-        "simplity_threshold": 0.5,
+        "simplify_threshold": 0.5,
         "simplify_aggressive": false
       },
       {
         "name": "LOD0",
-        "simplity_threshold": 0.3,
+        "simplify_threshold": 0.3,
         "simplify_aggressive": false
       }
     ],
