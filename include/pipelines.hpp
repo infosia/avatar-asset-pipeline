@@ -54,6 +54,10 @@ struct cmd_options {
     
     nlohmann::json input_config_json;
     nlohmann::json output_config_json;
+
+    // Used when pipeline creates new files or changes input/output file name
+    std::vector<std::string> input_override;
+    std::vector<std::string> output_override;
 };
 
 struct pipeline {

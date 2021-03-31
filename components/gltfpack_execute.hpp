@@ -124,6 +124,9 @@ protected:
         }
         AVATAR_PIPELINE_LOG("[INFO] gltfpack_execute");
 
+        options->input_override.clear();
+        options->output_override.clear();
+
         size_t count = 0;
         const auto gltfpack_obj = options->output_config_json["gltfpack"];
         if (gltfpack_obj.is_object()) {
@@ -140,6 +143,8 @@ protected:
                     if (gltfpack(options->output.c_str(), output_LOD.c_str(), nullptr, defaults(item, items_defaults)) != 0) {
                         AVATAR_PIPELINE_LOG("[ERROR] failed to execute gltfpack for " << name_LOD << ". Skipping.");
                     } else {
+                        options->input_override.push_back(output_LOD);
+                        options->output_override.push_back(output_LOD);                        
                         ++count;
                     }
                 }

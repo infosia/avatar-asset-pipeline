@@ -107,8 +107,24 @@ protected:
 
         outputs.SetValue(0, true); // discarded
 
-        const std::string input = options->input;
+        const auto input_size = options->input_override.size();
+        const auto output_size = options->output_override.size();
 
+        if (input_size > 0 && input_size == output_size) {
+            size_t count = 0;
+            for (size_t i = 0; i < options->input_override.size(); ++i) {
+                if (ProcessGltf(options->input_override[i], options->output_override[i])) {
+                    count++;
+                }
+            }
+            outputs.SetValue(0, count == 0);        
+        } else {
+            outputs.SetValue(0, !ProcessGltf(options->input, options->output));        
+        }
+    }
+
+    bool ProcessGltf(std::string input, std::string output)
+    {
         AVATAR_PIPELINE_LOG("[INFO] gltf_pipeline start");
         AVATAR_PIPELINE_LOG("[INFO] reading " << input);
 
@@ -117,14 +133,14 @@ protected:
 
         if (result != cgltf_result_success) {
             AVATAR_PIPELINE_LOG("[ERROR] failed to parse file " << input);
-            return;
+            return false;
         }
 
         result = cgltf_load_buffers(&options->gltf_options, data, input.c_str());
 
         if (result != cgltf_result_success) {
             AVATAR_PIPELINE_LOG("[ERROR] failed to load buffers from " << input);
-            return;
+            return false;
         }
 
         glb_loader->set_data(data);
@@ -146,10 +162,10 @@ protected:
             result = cgltf_validate(data);
 
             if (result == cgltf_result_success) {
-                AVATAR_PIPELINE_LOG("[INFO] writing " << options->output);
-                discarded = !gltf_write_file(&options->gltf_options, data, options->output);
+                AVATAR_PIPELINE_LOG("[INFO] writing " << output);
+                discarded = !gltf_write_file(&options->gltf_options, data, output);
                 if (discarded) {
-                    AVATAR_PIPELINE_LOG("[ERROR] faild to write output " << options->output);                
+                    AVATAR_PIPELINE_LOG("[ERROR] faild to write output " << output);                
                 }
             } else {
                 discarded = true;
@@ -158,18 +174,18 @@ protected:
         }
 
         if (options->debug) {
-            gltf_write_json(&options->gltf_options, data, options->output + ".json");
+            gltf_write_json(&options->gltf_options, data, output + ".json");
         }
 
         cgltf_free(data);
         glb_loader->set_data(nullptr);
         data = nullptr;
 
-        outputs.SetValue(0, discarded);
-
         if (!discarded) {
             AVATAR_PIPELINE_LOG("[INFO] gltf_pipeline finished without errors");
         }
+
+        return !discarded;
     }
 
     std::shared_ptr<glb_load> glb_loader;
