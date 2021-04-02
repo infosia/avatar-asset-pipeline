@@ -138,14 +138,28 @@ protected:
                     const auto item = items[i];
                     const auto name_LOD = item["name"].is_string() ? item["name"].get<std::string>() : "LOD" + std::to_string(i);
                     const auto output_LOD = path_without_extension(options->output).u8string() + "." + name_LOD + fs::path(options->output).extension().u8string();
+                    const auto output_LOD_char = output_LOD.c_str();
 
                     // use options->output for source assuming gltf_pipeline is executed before gltfpack
-                    if (gltfpack(options->output.c_str(), output_LOD.c_str(), nullptr, defaults(item, items_defaults)) != 0) {
+                    if (gltfpack(options->output.c_str(), output_LOD_char, nullptr, defaults(item, items_defaults)) != 0) {
                         AVATAR_PIPELINE_LOG("[ERROR] failed to execute gltfpack for " << name_LOD << ". Skipping.");
                     } else {
-                        options->input_override.push_back(output_LOD);
-                        options->output_override.push_back(output_LOD);                        
-                        ++count;
+                        cgltf_data* data = nullptr;
+                        auto result = cgltf_parse_file(&options->gltf_options, output_LOD_char, &data);
+
+                        if (result == cgltf_result_success && cgltf_validate(data) == cgltf_result_success) {
+                            if (options->debug) {
+                                gltf_write_json(&options->gltf_options, data, output_LOD + ".json");
+                            }
+                            options->input_override.push_back(output_LOD);
+                            options->output_override.push_back(output_LOD);                        
+                            ++count;                        
+                        } else {
+                            AVATAR_PIPELINE_LOG("[ERROR] failed to validate " << output_LOD << ". result:" << result);
+                        }
+
+                        if (data != nullptr)
+                            cgltf_free(data);
                     }
                 }
             }

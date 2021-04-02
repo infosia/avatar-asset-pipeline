@@ -183,6 +183,10 @@ protected:
 
         if (!discarded) {
             AVATAR_PIPELINE_LOG("[INFO] gltf_pipeline finished without errors");
+
+            // redirect gltf pipeline output to next input.
+            options->input = options->output;
+            options->output = output;
         }
 
         return !discarded;
