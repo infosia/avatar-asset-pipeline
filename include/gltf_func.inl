@@ -557,6 +557,37 @@ static void gltf_apply_transform_meshes(cgltf_data* data)
     }
 }
 
+static void gltf_fix_roll(cgltf_node* node, const glm::mat4 parent_matrix)
+{
+    const glm::mat4 identity = glm::mat4(1.0f);
+
+    const glm::vec3 pos = glm::make_vec3(node->translation);
+    const glm::vec3 scale = glm::make_vec3(node->scale);
+    const glm::quat rot = glm::make_quat(node->rotation);
+
+    glm::mat4 self = glm::translate(glm::mat4(1.0f), pos) * glm::mat4(rot) * glm::scale(glm::mat4(1.0f), scale) * identity;
+    glm::mat4 bind_matrix = parent_matrix * self;
+
+    glm::quat rot_parent;
+    glm::vec3 scale_unused, pos_unused, skew_unused;
+    glm::vec4 perspective_unused;
+    glm::decompose(parent_matrix, scale_unused, rot_parent, pos_unused, skew_unused, perspective_unused);
+
+    rot_parent.x = -rot_parent.x;
+    rot_parent.y = -rot_parent.y;
+    rot_parent.z = -rot_parent.z;
+
+    glm::vec3 newpos = rot_parent * pos;
+
+    node->translation[0] = newpos.x;
+    node->translation[1] = newpos.y;
+    node->translation[2] = newpos.z;
+
+    for (cgltf_size i = 0; i < node->children_count; i++) {
+        gltf_fix_roll(node->children[i], bind_matrix);
+    }
+}
+
 static void gltf_apply_transform(cgltf_node* node, const glm::mat4 parent_matrix)
 {
     const glm::mat4 identity = glm::mat4(1.0f);

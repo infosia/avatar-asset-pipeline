@@ -61,6 +61,7 @@ using json = nlohmann::json;
 
 #include "glb_T_pose.hpp"
 #include "glb_jpeg_to_png.hpp"
+#include "glb_fix_roll.hpp"
 #include "glb_transforms_apply.hpp"
 #include "glb_z_reverse.hpp"
 #include "glb_overrides.hpp"
@@ -87,6 +88,8 @@ static std::shared_ptr<DSPatch::Component> create_component(std::string name, cm
         return std::make_shared<DSPatch::glb_transforms_apply>(options);
     } else if (name == "glb_jpeg_to_png") {
         return std::make_shared<DSPatch::glb_jpeg_to_png>(options);
+    } else if (name == "glb_fix_roll") {
+        return std::make_shared<DSPatch::glb_fix_roll>(options);
     } else if (name == "glb_T_pose") {
         return std::make_shared<DSPatch::glb_T_pose>(options);
     } else if (name == "glb_overrides") {
