@@ -55,15 +55,58 @@ static bool gltf_apply_pose(std::string name, AvatarBuild::bone_mappings* mappin
     return node_count > 0;
 }
 
+static bool gltf_fix_roll(std::string name, AvatarBuild::bone_mappings* mappings)
+{
+    std::size_t node_count = 0;
+    const auto pose_found = mappings->poses.find(name);
+    if (pose_found != mappings->poses.end()) {
+        const auto pose = pose_found->second;
+        for (const auto bone : pose.bones) {
+            const auto bone_found = mappings->name_to_node.find(bone.name);
+            if (bone_found != mappings->name_to_node.end()) {
+                const auto node = bone_found->second;
+
+                glm::quat a = glm::make_quat(node->rotation);
+                glm::quat b = glm::make_quat(bone.rotation);
+                glm::quat b_inversed = glm::inverse(b);
+
+                // apply given rotation to the bone
+                glm::quat r = glm::normalize(a * b);
+
+                node->rotation[0] = r.x;
+                node->rotation[1] = r.y;
+                node->rotation[2] = r.z;
+                node->rotation[3] = r.w;
+
+                for (cgltf_size i = 0; i < node->children_count; ++i) {
+                    const auto child = node->children[i];
+                    glm::quat ca = glm::make_quat(child->rotation);
+                    glm::quat cr = glm::normalize(ca * b_inversed);
+
+                    child->rotation[0] = cr.x;
+                    child->rotation[1] = cr.y;
+                    child->rotation[2] = cr.z;
+                    child->rotation[3] = cr.w;
+                }
+
+                node_count++;
+            }
+        }
+    } else {
+        return false;
+    }
+    return node_count > 0;
+}
+
 static bool gltf_bone_symmetry_naming_test(const std::string& name_to_test, const std::string bone_key, const std::string& bone_name, const bool with_any_case)
 {
     static auto right_test = verex::verex().search_one_line().start_of_line().then("Right").anything();
-    static auto left_test  = verex::verex().search_one_line().start_of_line().then("Left").anything();
+    static auto left_test = verex::verex().search_one_line().start_of_line().then("Left").anything();
 
     auto re_same = verex::verex().search_one_line().anything().then(bone_name).with_any_case(with_any_case);
 
     auto re_r1 = verex::verex().search_one_line().anything().then("right").anything().then(bone_name).with_any_case(with_any_case);
-    auto re_l1  = verex::verex().search_one_line().anything().then("left").anything().then(bone_name).with_any_case(with_any_case);
+    auto re_l1 = verex::verex().search_one_line().anything().then("left").anything().then(bone_name).with_any_case(with_any_case);
     auto re_r2 = verex::verex().search_one_line().anything().then(bone_name).anything().then("right").with_any_case(with_any_case);
     auto re_l2 = verex::verex().search_one_line().anything().then(bone_name).anything().then("left").with_any_case(with_any_case);
 

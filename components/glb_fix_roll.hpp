@@ -28,7 +28,7 @@
 
 namespace DSPatch {
 
-// fix bone roll based on "REST" pose assuming all transforms are already applied
+// fix bone roll based on "REST" pose
 class glb_fix_roll final : public Component {
 
 public:
@@ -61,13 +61,8 @@ protected:
         if (data_ptr && bones_ptr) {
             cgltf_data* data = *data_ptr;
             AvatarBuild::bone_mappings* mappings = *bones_ptr;
-            if (gltf_apply_pose("REST", mappings)) {
-                const auto iter = mappings->name_to_node.find("Hips");
-                if (iter != mappings->name_to_node.end()) {
-                    const glm::mat4 identity = glm::mat4(1.0f);
-                    gltf_fix_roll(iter->second, identity);
-                    gltf_update_inverse_bind_matrices(data);
-                }
+            if (gltf_fix_roll("REST", mappings)) {
+                gltf_update_inverse_bind_matrices(data);
                 outputs.SetValue(0, false);    // discarded
             } else {
                 AVATAR_PIPELINE_LOG("[ERROR] glb_fix_roll: unable to find REST pose");
