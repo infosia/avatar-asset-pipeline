@@ -81,7 +81,7 @@ static bool gltf_fix_roll(std::string name, AvatarBuild::bone_mappings* mappings
                 for (cgltf_size i = 0; i < node->children_count; ++i) {
                     const auto child = node->children[i];
                     glm::quat ca = glm::make_quat(child->rotation);
-                    glm::quat cr = glm::normalize(ca * b_inversed);
+                    glm::quat cr = glm::normalize(b_inversed * ca);
 
                     child->rotation[0] = cr.x;
                     child->rotation[1] = cr.y;
