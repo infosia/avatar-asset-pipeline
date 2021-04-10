@@ -1,0 +1,12 @@
+{
+  "name":"glb_fix_roll",
+  "description":"Fix bone roll",
+  "pipelines":[
+    {
+      "name":"gltf_pipeline",
+      "components":[
+        "glb_fix_roll"
+      ]
+    }
+  ]
+}

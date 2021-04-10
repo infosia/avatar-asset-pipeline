@@ -55,6 +55,7 @@ Check out `pipelines` directory for working pipeline examples in practice.
 - [x] Update material properties
 - [x] Update VRM properties
 - [x] Create multiple Level of Details (LOD)
+- [x] Fix bone roll without changing pose
 - [x] Index optimization
 - [x] Vertex cache optimization
 - [x] Overdraw optimization
