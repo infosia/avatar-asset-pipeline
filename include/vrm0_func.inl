@@ -498,3 +498,11 @@ static bool vrm0_update_bones(AvatarBuild::bone_mappings* mappings, cgltf_data* 
 
     return true;
 }
+
+static bool vrm0_remove_materials_unlit(cgltf_data* data)
+{
+    for (cgltf_size i = 0; i < data->materials_count; ++i) {
+        data->materials[i].unlit = 0;
+    }
+    return true;
+}

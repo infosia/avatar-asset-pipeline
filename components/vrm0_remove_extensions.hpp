@@ -62,6 +62,9 @@ protected:
             // This effectively disables VRM extension output
             data->has_vrm_v0_0 = 0;
 
+            // remove unlit from materials because VRM sets unlit for all MToon materials
+            vrm0_remove_materials_unlit(data);
+
             outputs.SetValue(0, false);    // discarded
             outputs.SetValue(1, data);
             outputs.SetValue(2, *bones_ptr);
