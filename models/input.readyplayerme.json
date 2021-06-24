@@ -6,22 +6,24 @@
   "poses":{
     "T": {
       "LeftUpperArm":  {
-        "rotation": [ -0.5, 0, 0, 0.866 ]
+        "rotation": [ -0.422, 0, 0, 0.90 ]
       },
       "RightUpperArm": {
-        "rotation": [ -0.5, 0, 0, 0.866 ]
+        "rotation": [ -0.422, 0, 0, 0.90 ]
       },
       "LeftLowerArm": {
         "rotation": [ 0, 0, -0.128, 0.992 ]
       },
       "RightLowerArm": {
         "rotation": [ 0, 0, 0.128, 0.992 ]
+      }
+    },
+    "REST": {
+      "LeftLowerArm":{
+        "rotation":[ 0, 0.707, 0, 0.707 ]
       },
-      "LeftHand": {
-        "rotation": [ 0, -0.128, 0, 0.992 ]
-      },
-      "RightHand": {
-        "rotation": [ 0, 0.128, 0, 0.992 ]
+      "RightLowerArm":{
+        "rotation":[ 0, -0.707, 0, 0.707 ]
       }
     }
   },
