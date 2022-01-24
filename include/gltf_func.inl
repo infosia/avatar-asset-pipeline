@@ -762,7 +762,7 @@ static void gltf_apply_transforms(cgltf_data* data, std::unordered_map<std::stri
         }
     }
 
-    // clear translation of hips parents
+    // clear translation of hips parents so bone position matches node position (VRM requirement)
     const auto hips_found = name_to_node.find("Hips");
     if (hips_found != name_to_node.end()) {
         const auto bone_hips = hips_found->second;
