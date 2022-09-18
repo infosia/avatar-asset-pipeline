@@ -232,8 +232,10 @@ int main(int argc, char** argv)
 
     cgltf_options gltf_options = { };
 
+#ifdef WIN32
     // enable multibyte file name
     gltf_options.file.read = &gltf_file_read;
+#endif
 
     // setup memory allocation check
     if (debug) {

@@ -331,7 +331,7 @@ static void vrm0_ensure_defaults(const json& output_config_object, cgltf_data* d
         const auto values = item.second;
         const auto store_size = values.size() * sizeof(cgltf_vrm_blendshape_bind_v0_0);
         const auto binds = (cgltf_vrm_blendshape_bind_v0_0*)gltf_calloc(store_size, 1);
-        memcpy_s(binds, store_size, values.data(), store_size);
+        memcpy(binds, values.data(), store_size);
         cgltf_vrm_blendshape_group_presetName_v0_0 preset_name;
         select_cgltf_vrm_blendshape_group_presetName_v0_0(gltf_str_tolower(item.first).c_str(), &preset_name);
         data->vrm_v0_0.blendShapeMaster.blendShapeGroups[index] = {

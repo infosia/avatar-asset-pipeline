@@ -63,7 +63,7 @@ static char* gltf_alloc_chars(const char* str)
         return (char*)gltf_calloc(1, 1);
 
     auto dst = (char*)gltf_calloc(length + 1, sizeof(char));
-    if (dst > 0)
+    if (dst != NULL)
         strncpy(dst, str, length);
 
     return dst;
@@ -76,6 +76,7 @@ static std::string gltf_str_tolower(std::string s)
     return s;
 }
 
+#ifdef WIN32
 static cgltf_result gltf_wstring_file_read(const struct cgltf_memory_options* memory_options, const struct cgltf_file_options* file_options, const std::wstring path, cgltf_size* size, void** data)
 {
     (void)file_options;
@@ -133,6 +134,7 @@ static cgltf_result gltf_file_read(const struct cgltf_memory_options* memory_opt
     std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
     return gltf_wstring_file_read(memory_options, file_options, converter.from_bytes(path), size, data);
 }
+#endif
 
 static void gltf_f3_min(cgltf_float* a, cgltf_float* b, cgltf_float* out)
 {
@@ -229,9 +231,9 @@ static bool gltf_create_buffer(cgltf_data* data)
             if (data->buffer_views[i].buffer == buffer) {
                 const auto size_to_copy = buffer_view->size;
                 if (buffer_view->data != nullptr) {
-                    memcpy_s(buffer_dst, size_to_copy, buffer_view->data, size_to_copy);
+                    memcpy(buffer_dst, buffer_view->data, size_to_copy);
                 } else {
-                    memcpy_s(buffer_dst, size_to_copy, ((uint8_t*)buffer_view->buffer->data + buffer_view->offset), size_to_copy);
+                    memcpy(buffer_dst, ((uint8_t*)buffer_view->buffer->data + buffer_view->offset), size_to_copy);
                 }
                 buffer_view->offset = (buffer_dst - buffer_data);
                 buffer_dst += (size_to_copy + 3) & ~3;
@@ -850,7 +852,7 @@ static void gltf_png_write_func(void* context, void* buffer, int size)
         gltf_free(image->buffer_view->data);
 
     uint8_t* buffer_dst = (uint8_t*)gltf_calloc(1, size);
-    memcpy_s(buffer_dst, size, buffer, size);
+    memcpy(buffer_dst, buffer, size);
 
     image->buffer_view->data = buffer_dst;
     image->buffer_view->size = size;

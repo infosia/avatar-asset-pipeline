@@ -76,7 +76,7 @@ static bool gltf_read_image_from_file(fs::path file, cgltf_image* image, cgltf_b
         const auto size = raw.size();
         image->buffer_view->size = size;
         image->buffer_view->data = (uint8_t*)gltf_calloc(1, size);
-        memcpy_s(image->buffer_view->data, size, raw.data(), size);
+        memcpy(image->buffer_view->data, raw.data(), size);
         image_data.close();
 
         if (image->buffer_view->name == nullptr) {
@@ -259,7 +259,7 @@ static bool gltf_override_materials(json& materials_override, cgltf_data* data, 
 
 static bool gltf_override_parameters(json& overrides_object, cgltf_data* data, AvatarBuild::cmd_options* options)
 {
-    (void)data, overrides_object;
+    (void)data, (void)overrides_object;
     auto materials_overrides = overrides_object["materials"];
     if (materials_overrides.is_array()) {
         for (auto item : materials_overrides) {
